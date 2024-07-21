@@ -4,7 +4,6 @@ import com.server.scapture.domain.Video;
 import com.server.scapture.util.S3.S3Service;
 import com.server.scapture.util.response.CustomAPIResponse;
 import com.server.scapture.video.dto.VideoCreateRequestDto;
-import com.server.scapture.video.dto.VideoGetResponseDto;
 import com.server.scapture.video.repository.VideoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -36,7 +35,7 @@ public class VideoServiceImpl implements VideoService{
         }
         // data
         // resonseBody
-        CustomAPIResponse<VideoGetResponseDto> responseBody = CustomAPIResponse.createSuccess(HttpStatus.CREATED.value(), null, "비디오 업로드 성공");
+        CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccess(HttpStatus.CREATED.value(), null, "비디오 업로드 성공");
         // ResponseEntity
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -44,16 +43,13 @@ public class VideoServiceImpl implements VideoService{
     }
 
     @Override
-    public ResponseEntity<CustomAPIResponse<?>> createVideo(VideoCreateRequestDto videoCreateRequestDto) {
-        String title = videoCreateRequestDto.getTitle();
-        String place = videoCreateRequestDto.getPlace();
-        List<String> videoUrls = videoCreateRequestDto.getVideoUrl();
-
-        for (String url : videoUrls) {
+    public ResponseEntity<CustomAPIResponse<?>> createVideo(List<VideoCreateRequestDto> videoCreateRequestDtoList) {
+        for (VideoCreateRequestDto videoCreateRequestDto : videoCreateRequestDtoList) {
             Video video = Video.builder()
-                    .title(title)
-                    .place(place)
-                    .url(url)
+//                    .schedule()
+                    .name(videoCreateRequestDto.getName())
+                    .image(videoCreateRequestDto.getImage())
+                    .video(videoCreateRequestDto.getVideo())
                     .build();
             videoRepository.save(video);
         }
@@ -61,25 +57,6 @@ public class VideoServiceImpl implements VideoService{
         CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.CREATED.value(), "영상 등록이 완료되었습니다.");
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(responseBody);
-    }
-
-    @Override
-    public ResponseEntity<CustomAPIResponse<?>> getVideo() {
-        List<Video> videoList = videoRepository.findAll();
-        List<VideoGetResponseDto> data = new ArrayList<>();
-        for (Video video : videoList) {
-            VideoGetResponseDto responseDto = VideoGetResponseDto.builder()
-                    .title(video.getTitle())
-                    .place(video.getPlace())
-                    .url(video.getUrl())
-                    .createdAt(video.localDateTimeToString())
-                    .build();
-            data.add(responseDto);
-        }
-        CustomAPIResponse<List<VideoGetResponseDto>> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "영상 조회가 완료되었습니다.");
-        return ResponseEntity
-                .status(HttpStatus.OK)
                 .body(responseBody);
     }
 }

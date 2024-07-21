@@ -1,11 +1,9 @@
 package com.server.scapture.domain;
 
 import com.server.scapture.util.entity.BaseEntity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
@@ -14,11 +12,16 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
-public class Video extends BaseEntity {
+public class Video {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String title;
-    private String place;
-    private String url;
+    private Long id;                // PK
+//    @ManyToOne
+//    @JoinColumn("schedule_id")
+//    Schedule schedule;            // 운영 일정 FK
+    private String name;            // 영상 제목
+    private String image;           // 영상 썸네일
+    private String video;           // 영상
+    @ColumnDefault("0")
+    private int likeCount;          // 좋아요 수
 }
