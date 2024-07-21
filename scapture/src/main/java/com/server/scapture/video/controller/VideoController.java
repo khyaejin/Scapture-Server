@@ -17,10 +17,10 @@ import java.util.List;
 public class VideoController {
     private final VideoService videoService;
     // S3 업로드
-    @PostMapping("/s3")
-    public ResponseEntity<CustomAPIResponse<?>> upload(@RequestParam("image") List<MultipartFile> multipartFiles) throws IOException {
-        return videoService.upload(multipartFiles);
-    }
+//    @PostMapping("/s3")
+//    public ResponseEntity<CustomAPIResponse<?>> upload(@RequestParam("image") List<MultipartFile> multipartFiles) throws IOException {
+//        return videoService.upload(multipartFiles);
+//    }
 
     @PostMapping
     public ResponseEntity<CustomAPIResponse<?>> createVideo(@RequestBody List<VideoCreateRequestDto> videoCreateRequestDtoList) {
