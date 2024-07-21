@@ -16,9 +16,9 @@ public class Video {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;                // PK
-//    @ManyToOne
-//    @JoinColumn("schedule_id")
-//    Schedule schedule;            // 운영 일정 FK
+    @ManyToOne
+    @JoinColumn(name = "schedule_id")
+    private Schedule schedule;            // 운영 일정 FK
     private String name;            // 영상 제목
     private String image;           // 영상 썸네일
     private String video;           // 영상
