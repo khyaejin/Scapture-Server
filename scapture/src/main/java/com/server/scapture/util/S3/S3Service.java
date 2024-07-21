@@ -1,12 +1,12 @@
 package com.server.scapture.util.S3;
 
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,7 +20,8 @@ import java.util.Date;
 @RequiredArgsConstructor
 @Service
 public class S3Service {
-    private final String bucket = "scapture-video";
+    @Value("${cloud.aws.s3.bucketName}")
+    private String bucket;
 
     private final AmazonS3 amazonS3;
 
