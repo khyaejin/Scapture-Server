@@ -12,7 +12,8 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class VideoCreateRequestDto {
-    private String title;
-    private String place;
-    private List<String> videoUrl;
+//    private Long scheduleId;
+    private String name;
+    private String image;
+    private String video;
 }

@@ -11,7 +11,5 @@ import java.util.List;
 public interface VideoService {
     ResponseEntity<CustomAPIResponse<?>> upload(List<MultipartFile> multipartFiles) throws IOException;
 
-    ResponseEntity<CustomAPIResponse<?>> createVideo(VideoCreateRequestDto videoCreateRequestDto);
-
-    ResponseEntity<CustomAPIResponse<?>> getVideo();
+    ResponseEntity<CustomAPIResponse<?>> createVideo(List<VideoCreateRequestDto> videoCreateRequestDtoList);
 }

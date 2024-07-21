@@ -23,8 +23,8 @@ public class VideoController {
     }
 
     @PostMapping
-    public ResponseEntity<CustomAPIResponse<?>> createVideo(@RequestBody VideoCreateRequestDto videoCreateRequestDto) {
-        return videoService.createVideo(videoCreateRequestDto);
+    public ResponseEntity<CustomAPIResponse<?>> createVideo(@RequestBody List<VideoCreateRequestDto> videoCreateRequestDtoList) {
+        return videoService.createVideo(videoCreateRequestDtoList);
     }
 
     @GetMapping
