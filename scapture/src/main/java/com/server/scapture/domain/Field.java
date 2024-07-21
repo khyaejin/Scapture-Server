@@ -11,10 +11,10 @@ import lombok.*;
 public class Field {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id;                    // PK
     @ManyToOne
     @JoinColumn(name = "stadium_id")
-    private Stadium stadium;
-    private String name;
-    private String type;
+    private Stadium stadium;            // 경기장 FK
+    private String name;                // 구장 명
+    private String type;                // 구장 유형
 }
