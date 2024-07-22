@@ -1,7 +1,7 @@
 package com.server.scapture.field.controller;
 
 import com.server.scapture.field.dto.CreateFieldRequestDto;
-import com.server.scapture.field.dto.FieldAttributes;
+import com.server.scapture.field.service.FieldService;
 import com.server.scapture.util.response.CustomAPIResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,8 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("api/fields")
 public class FieldController {
+    private final FieldService fieldService;
     @PostMapping
     ResponseEntity<CustomAPIResponse<?>> createField(@RequestBody CreateFieldRequestDto createFieldRequestDto) {
-        return null;
+        return fieldService.createField(createFieldRequestDto);
     }
 }
