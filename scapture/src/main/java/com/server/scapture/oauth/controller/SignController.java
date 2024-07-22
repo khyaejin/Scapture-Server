@@ -1,5 +1,6 @@
 package com.server.scapture.oauth.controller;
 
+import com.server.scapture.oauth.dto.UserInfo;
 import com.server.scapture.oauth.service.SignService;
 import com.server.scapture.util.response.CustomAPIResponse;
 import lombok.RequiredArgsConstructor;
@@ -27,18 +28,20 @@ public class SignController {
 
         // 2. 접근 토큰 받기
         String accessToken = signService.getAccessToken(code);
-        logger.info("Access Token: {}", accessToken);
+
+            //테스트 용도
+            logger.info("Access Token: {}", accessToken);
 
         // 3. 사용자 정보 받기
-        Map<String, Object> userInfo = signService.getUserInfo(accessToken);
+        UserInfo userInfo = signService.getUserInfo(accessToken);
 
-        String email = (String) userInfo.get("email");
-        String nickname = (String) userInfo.get("nickname");
+            //log를 통한 테스트 용도
 
-        logger.info("User Email: {}", email);
-        logger.info("User Nickname: {}", nickname);
+            logger.info("User_Email: {}", userInfo.getEmail());
+            logger.info("User_Nickname: {}", userInfo.getNickname());
+            logger.info("User_Id: {}", userInfo.getId());
+            logger.info("User_ProfileImage: {}", userInfo.getProfileImage());
 
-        // 필요한 로직 추가
         // 4. 로그인
 
         // 5. jwt 토큰 발급
