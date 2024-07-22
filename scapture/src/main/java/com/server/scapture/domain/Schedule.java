@@ -21,6 +21,6 @@ public class Schedule {
     private LocalDateTime startDate;// 이용 시간(시작)
     private LocalDateTime endDate;  // 이용 시간(종료)
     @ColumnDefault("false")
-    private boolean isReserved;     // 예약 여부
+    private Boolean isReserved;     // 예약 여부
     private int price;              // 가격
 }

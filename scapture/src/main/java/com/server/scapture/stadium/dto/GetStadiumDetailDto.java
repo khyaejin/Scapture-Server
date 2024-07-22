@@ -16,7 +16,7 @@ public class GetStadiumDetailDto {
     private String name;
     private String description;
     private String location;
-    private boolean isOutside;
+    private Boolean isOutside;
     private String parking;
     private List<SimpleImageResponseDto> images;
     private List<SimpleFieldResponseDto> fields;

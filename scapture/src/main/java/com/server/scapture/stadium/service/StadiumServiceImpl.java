@@ -45,7 +45,7 @@ public class StadiumServiceImpl implements StadiumService{
                 .city(data.getCity())
                 .state(data.getState())
                 .hours(data.getHours())
-                .isOutside(data.isOutside())
+                .isOutside(data.getIsOutside())
                 .parking(data.getParking())
                 .build();
         // 1-2. 저장
@@ -105,7 +105,7 @@ public class StadiumServiceImpl implements StadiumService{
                     .name(stadium.getName())
                     .location(stadium.getLocation())
                     .hours(stadium.getHours())
-                    .isOutside(stadium.isOutside())
+                    .isOutside(stadium.getIsOutside())
                     .parking(stadium.getParking())
                     .image(image)
                     .build();
@@ -147,7 +147,7 @@ public class StadiumServiceImpl implements StadiumService{
                     .name(stadium.getName())
                     .location(stadium.getLocation())
                     .hours(stadium.getHours())
-                    .isOutside(stadium.isOutside())
+                    .isOutside(stadium.getIsOutside())
                     .parking(stadium.getParking())
                     .image(image)
                     .build();
@@ -216,7 +216,7 @@ public class StadiumServiceImpl implements StadiumService{
                 .name(stadium.getName())
                 .description(stadium.getDescription())
                 .location(stadium.getLocation())
-                .isOutside(stadium.isOutside())
+                .isOutside(stadium.getIsOutside())
                 .parking(stadium.getParking())
                 .images(images)
                 .fields(fields)

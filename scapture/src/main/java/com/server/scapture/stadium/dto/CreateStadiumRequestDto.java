@@ -16,6 +16,6 @@ public class CreateStadiumRequestDto {
     private String city;
     private String state;
     private String hours;
-    private boolean isOutside;
+    private Boolean isOutside;
     private String parking;
 }

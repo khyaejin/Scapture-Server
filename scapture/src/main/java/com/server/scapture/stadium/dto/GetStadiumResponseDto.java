@@ -13,7 +13,7 @@ public class GetStadiumResponseDto {
     private String name;
     private String location;
     private String hours;
-    private boolean isOutside;
+    private Boolean isOutside;
     private String parking;
     private String image;
 }
