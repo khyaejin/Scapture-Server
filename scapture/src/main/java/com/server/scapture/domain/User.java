@@ -14,7 +14,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;            // PK
     private String provider;    // 로그인 업체(Google/Kakao/Naver)
-    private int providerId;         // AccessToken을 통해 접근하여 받은 PK 값
+    private String providerId;  // AccessToken을 통해 접근하여 받은 PK 값
     private String name;        // 이름(닉네임)
     private String team;        // 소속팀
     private String location;    // 활동 지역
