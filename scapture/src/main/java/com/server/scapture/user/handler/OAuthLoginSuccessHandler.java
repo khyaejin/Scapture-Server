@@ -65,7 +65,7 @@ public class OAuthLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHand
         }
 
         // 정보 추출
-        int providerId = Integer.parseInt(oAuth2UserInfo.getProviderId());
+        String providerId = oAuth2UserInfo.getProviderId();
         String name = oAuth2UserInfo.getName();
 
         User existUser = userRepository.findByProviderId(providerId);
