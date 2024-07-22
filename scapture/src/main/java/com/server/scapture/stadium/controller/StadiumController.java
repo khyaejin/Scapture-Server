@@ -24,4 +24,8 @@ public class StadiumController {
     ResponseEntity<CustomAPIResponse<?>> getStadiums(@RequestParam("city") String city, @RequestParam("state") String state) {
         return stadiumService.getStadiumByCityAndState(city, state);
     }
+    @GetMapping
+    ResponseEntity<CustomAPIResponse<?>> getStadiums(@RequestParam("keyword") String keyword){
+        return null;
+    }
 }

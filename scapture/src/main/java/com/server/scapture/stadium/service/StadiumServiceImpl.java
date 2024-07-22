@@ -5,7 +5,7 @@ import com.server.scapture.domain.Stadium;
 import com.server.scapture.image.repository.ImageRepository;
 import com.server.scapture.stadium.dto.CreateStadiumRequestDto;
 import com.server.scapture.stadium.dto.CreateStadiumResponseDto;
-import com.server.scapture.stadium.dto.GetStadiumByCityAndStateResponseDto;
+import com.server.scapture.stadium.dto.GetStadiumResponseDto;
 import com.server.scapture.stadium.repository.StadiumRepository;
 import com.server.scapture.util.S3.S3Service;
 import com.server.scapture.util.response.CustomAPIResponse;
@@ -77,7 +77,7 @@ public class StadiumServiceImpl implements StadiumService{
         else foundStadiums = stadiumRepository.findByCityAndState(city, state);
         // 2. Response
         // 2-1. data
-        List<GetStadiumByCityAndStateResponseDto> data = new ArrayList<>();
+        List<GetStadiumResponseDto> data = new ArrayList<>();
         for (Stadium stadium : foundStadiums) {
             // 2-1-1. Image 1개 찾기
             Optional<Image> foundImage = imageRepository.findFirst1ByStadium(stadium);
@@ -85,7 +85,7 @@ public class StadiumServiceImpl implements StadiumService{
             // 2-1-2. Image가 없는 경우 -> null 값
             if (foundImage.isPresent()) image = foundImage.get().getImage();
             // 2-1-2. response 만들기
-            GetStadiumByCityAndStateResponseDto response = GetStadiumByCityAndStateResponseDto.builder()
+            GetStadiumResponseDto response = GetStadiumResponseDto.builder()
                     .stadiumId(stadium.getId())
                     .name(stadium.getName())
                     .location(stadium.getLocation())
@@ -97,11 +97,16 @@ public class StadiumServiceImpl implements StadiumService{
             data.add(response);
         }
         // 2-2. ResponseBody
-        CustomAPIResponse<List<GetStadiumByCityAndStateResponseDto>> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "구장 조회 완료되었습니다.");
+        CustomAPIResponse<List<GetStadiumResponseDto>> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "구장 조회 완료되었습니다.");
         // 2-3. ResponseEntity
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(responseBody);
+    }
+
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> getStadiumByKeyword(String keyword) {
+        return null;
     }
 
 }
