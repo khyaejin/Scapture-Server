@@ -1,7 +1,10 @@
 package com.server.scapture.user.handler;
 
+import com.server.scapture.domain.User;
 import com.server.scapture.user.JwtUtil;
 import com.server.scapture.user.dto.GoogleUserInfo;
+import com.server.scapture.user.dto.KakaoUserInfo;
+import com.server.scapture.user.dto.NaverUserInfo;
 import com.server.scapture.user.dto.OAuth2UserInfo;
 import com.server.scapture.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,11 +15,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.Map;
-import java.util.UUID;
 
 @Slf4j
 @Component
@@ -27,9 +30,6 @@ public class OAuthLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHand
 
     @Value("${jwt.access-token.expiration-time}")
     private long ACCESS_TOKEN_EXPIRATION_TIME; // 액세스 토큰 유효기간
-
-    @Value("${jwt.refresh-token.expiration-time}")
-    private long REFRESH_TOKEN_EXPIRATION_TIME; // 리프레쉬 토큰 유효기간
 
     private OAuth2UserInfo oAuth2UserInfo = null;
 
@@ -69,16 +69,14 @@ public class OAuthLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHand
             log.info("신규 유저입니다. 등록을 진행합니다.");
 
             user = User.builder()
-                    .userId(UUID.randomUUID())
                     .name(name)
                     .provider(provider)
-                    .providerId(providerId)
+                    .providerId(Integer.parseInt(providerId))
                     .build();
             userRepository.save(user);
         } else {
             // 기존 유저인 경우
             log.info("기존 유저입니다.");
-            refreshTokenRepository.deleteByUserId(existUser.getUserId());
             user = existUser;
         }
 
@@ -86,21 +84,12 @@ public class OAuthLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHand
         log.info("PROVIDER : {}", provider);
         log.info("PROVIDER_ID : {}", providerId);
 
-        // 리프레쉬 토큰 발급 후 저장
-        String refreshToken = jwtUtil.generateRefreshToken(user.getUserId(), REFRESH_TOKEN_EXPIRATION_TIME);
-
-        RefreshToken newRefreshToken = RefreshToken.builder()
-                .userId(user.getUserId())
-                .token(refreshToken)
-                .build();
-        refreshTokenRepository.save(newRefreshToken);
-
         // 액세스 토큰 발급
-        String accessToken = jwtUtil.generateAccessToken(user.getUserId(), ACCESS_TOKEN_EXPIRATION_TIME);
+        String accessToken = jwtUtil.generateAccessToken(user.getId(), ACCESS_TOKEN_EXPIRATION_TIME);
 
-        // 이름, 액세스 토큰, 리프레쉬 토큰을 담아 리다이렉트
+        // 이름과 액세스 토큰을 담아 리다이렉트
         String encodedName = URLEncoder.encode(name, "UTF-8");
-        String redirectUri = String.format(REDIRECT_URI, encodedName, accessToken, refreshToken);
+        String redirectUri = String.format(REDIRECT_URI, encodedName, accessToken);
         getRedirectStrategy().sendRedirect(request, response, redirectUri);
     }
 }

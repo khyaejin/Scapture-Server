@@ -25,7 +25,7 @@ public class JwtUtil {
     }
 
     // 액세스 토큰을 발급하는 메서드
-    public String generateAccessToken(UUID userId, long expirationMillis) {
+    public String generateAccessToken(Long userId, long expirationMillis) {
         log.info("액세스 토큰이 발행되었습니다.");
 
         return Jwts.builder()
