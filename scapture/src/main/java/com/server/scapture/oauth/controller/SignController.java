@@ -38,7 +38,6 @@ public class SignController {
         logger.info("User Email: {}", email);
         logger.info("User Nickname: {}", nickname);
 
-        // 필요한 로직 추가
         // 4. 로그인
 
         // 5. jwt 토큰 발급
