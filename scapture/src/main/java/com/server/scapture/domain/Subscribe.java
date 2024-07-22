@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Entity
 @Getter
@@ -19,4 +20,9 @@ public class Subscribe {
     private User user;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
+
+    public String convertEndDate() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+        return endDate.format(formatter);
+    }
 }
