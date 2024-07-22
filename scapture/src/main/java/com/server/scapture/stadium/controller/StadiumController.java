@@ -21,11 +21,11 @@ public class StadiumController {
         return stadiumService.createStadium(data, images);
     }
     @GetMapping
-    ResponseEntity<CustomAPIResponse<?>> getStadiums(@RequestParam("city") String city, @RequestParam("state") String state) {
+    ResponseEntity<CustomAPIResponse<?>> getStadiumsByCityAndState(@RequestParam("city") String city, @RequestParam("state") String state) {
         return stadiumService.getStadiumByCityAndState(city, state);
     }
-    @GetMapping
-    ResponseEntity<CustomAPIResponse<?>> getStadiums(@RequestParam("keyword") String keyword){
-        return null;
+    @GetMapping("/search")
+    ResponseEntity<CustomAPIResponse<?>> getStadiumsByKeyword(@RequestParam("keyword") String keyword){
+        return stadiumService.getStadiumByKeyword(keyword);
     }
 }

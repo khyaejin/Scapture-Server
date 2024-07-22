@@ -106,7 +106,44 @@ public class StadiumServiceImpl implements StadiumService{
 
     @Override
     public ResponseEntity<CustomAPIResponse<?>> getStadiumByKeyword(String keyword) {
-        return null;
+        // 1. Keyword를 통해 경기장 검색
+        List<Stadium> foundStadium = stadiumRepository.findByNameContaining(keyword);
+        // No Content
+        if (foundStadium.isEmpty()) {
+            // 1-1. responseBody
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.NO_CONTENT.value(), "조회된 경기장이 없습니다.");
+            // 1-2. ResponseEntity
+            return ResponseEntity
+                    .status(HttpStatus.NO_CONTENT)
+                    .body(responseBody);
+        }
+        // 2. Response
+        // 2-1. data
+        List<GetStadiumResponseDto> data = new ArrayList<>();
+        for (Stadium stadium : foundStadium) {
+            // 2-1-1. Image 1개 찾기
+            Optional<Image> foundImage = imageRepository.findFirst1ByStadium(stadium);
+            String image = null;
+            // 2-1-2. Image가 없는 경우 -> null 값
+            if (foundImage.isPresent()) image = foundImage.get().getImage();
+            // 2-1-2. response 만들기
+            GetStadiumResponseDto response = GetStadiumResponseDto.builder()
+                    .stadiumId(stadium.getId())
+                    .name(stadium.getName())
+                    .location(stadium.getLocation())
+                    .hours(stadium.getHours())
+                    .isOutside(stadium.isOutside())
+                    .parking(stadium.getParking())
+                    .image(image)
+                    .build();
+            data.add(response);
+        }
+        // 2-2. ResponseBody
+        CustomAPIResponse<List<GetStadiumResponseDto>> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "경기장 검색 완료되었습니다.");
+        // 2-3. ResponseEntity
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(responseBody);
     }
 
 }
