@@ -29,9 +29,9 @@ public class VideoServiceImpl implements VideoService{
         for (MultipartFile multipartFile : multipartFiles) {
             String fileName = UUID.randomUUID() + multipartFile.getOriginalFilename();
 
-            s3Service.upload(multipartFile, fileName);
-            String presignedURL = s3Service.getPresignedURL(fileName);
-            imageUrlList.add(presignedURL);
+//            s3Service.upload(multipartFile, fileName);
+//            String presignedURL = s3Service.getPresignedURL(fileName);
+//            imageUrlList.add(presignedURL);
         }
         // data
         // resonseBody

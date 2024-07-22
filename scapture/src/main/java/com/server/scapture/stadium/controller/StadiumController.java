@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -16,7 +17,7 @@ import java.util.List;
 public class StadiumController {
     private final StadiumService stadiumService;
     @PostMapping
-    ResponseEntity<CustomAPIResponse<?>> createStadium(@RequestPart CreateStadiumRequestDto createStadiumRequestDto, @RequestPart List<MultipartFile> images){
+    ResponseEntity<CustomAPIResponse<?>> createStadium(@RequestPart CreateStadiumRequestDto createStadiumRequestDto, @RequestPart List<MultipartFile> images) throws IOException {
         return stadiumService.createStadium(createStadiumRequestDto, images);
     }
     @GetMapping

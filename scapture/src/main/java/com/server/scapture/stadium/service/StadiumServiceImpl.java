@@ -6,6 +6,7 @@ import com.server.scapture.image.repository.ImageRepository;
 import com.server.scapture.stadium.dto.CreateStadiumRequestDto;
 import com.server.scapture.stadium.dto.CreateStadiumResponseDto;
 import com.server.scapture.stadium.repository.StadiumRepository;
+import com.server.scapture.util.S3.S3Service;
 import com.server.scapture.util.response.CustomAPIResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,8 +23,9 @@ import java.util.Optional;
 public class StadiumServiceImpl implements StadiumService{
     private final StadiumRepository stadiumRepository;
     private final ImageRepository imageRepository;
+    private final S3Service s3Service;
     @Override
-    public ResponseEntity<CustomAPIResponse<?>> createStadium(CreateStadiumRequestDto createStadiumRequestDto, List<MultipartFile> images) {
+    public ResponseEntity<CustomAPIResponse<?>> createStadium(CreateStadiumRequestDto createStadiumRequestDto, List<MultipartFile> images) throws IOException {
         // 1. Stadium 생성
         // 1-1. Stadium 생성
         Stadium stadium = Stadium.builder()
@@ -38,11 +41,13 @@ public class StadiumServiceImpl implements StadiumService{
         // 1-2. 저장
         stadiumRepository.save(stadium);
         // 2. Stadium Image 생성
+        String dirName = stadium.getName();
         for (MultipartFile image : images) {
-            String name = image.getOriginalFilename();
+            String imageUrl = s3Service.upload(image, dirName);
+            System.out.println(imageUrl);
             Image stadiumImage = Image.builder()
                     .stadium(stadium)
-                    .image(name)
+                    .image(imageUrl)
                     .build();
             imageRepository.save(stadiumImage);
         }
