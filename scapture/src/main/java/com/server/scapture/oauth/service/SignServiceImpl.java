@@ -1,6 +1,8 @@
 package com.server.scapture.oauth.service;
 
+import com.server.scapture.oauth.dto.UserInfo;
 import lombok.RequiredArgsConstructor;
+import org.apache.catalina.User;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,8 +86,12 @@ public class SignServiceImpl implements SignService {
 
 
     @Override
-    public HashMap<String, Object> getUserInfo(String accessToken) {
-        HashMap<String, Object> userInfo = new HashMap<>();
+    public UserInfo getUserInfo(String accessToken) {
+        long id = 0;
+        String nickname = null;
+        String email = null;
+        String profileImageUrl = null;
+
         String reqUrl = "https://kapi.kakao.com/v2/user/me";
         try {
             URL url = new URL(reqUrl);
@@ -97,41 +103,67 @@ public class SignServiceImpl implements SignService {
             int responseCode = conn.getResponseCode();
             logger.info("Response Code: {}", responseCode);
 
-            BufferedReader br;
-            if (responseCode >= 200 && responseCode <= 300) {
-                br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            } else {
-                br = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-            }
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(
+                    responseCode >= 200 && responseCode <= 300 ? conn.getInputStream() : conn.getErrorStream()))) {
+                String line;
+                StringBuilder responseSb = new StringBuilder();
+                while ((line = br.readLine()) != null) {
+                    responseSb.append(line);
+                }
+                String result = responseSb.toString();
+                logger.info("User Info Response Body: {}", result);
 
-            String line;
-            StringBuilder responseSb = new StringBuilder();
-            while ((line = br.readLine()) != null) {
-                responseSb.append(line);
-            }
-            String result = responseSb.toString();
-            logger.info("User Info Response Body: {}", result);
+                // JSON 파싱
+                JSONObject jsonObject = new JSONObject(result);
 
-            // JSON 파싱
-            JSONObject jsonObject = new JSONObject(result);
-            if (jsonObject.has("properties")) {
-                String nickname = jsonObject.getJSONObject("properties").getString("nickname");
-                userInfo.put("nickname", nickname);
-            } else {
-                logger.warn("No 'properties' field in response");
-            }
-            if (jsonObject.has("kakao_account")) {
-                String email = jsonObject.getJSONObject("kakao_account").getString("email");
-                userInfo.put("email", email);
-            } else {
-                logger.warn("No 'kakao_account' field in response");
-            }
+                // ID 가져오기
+                if (jsonObject.has("id")) {
+                    id = jsonObject.getLong("id");
+                } else {
+                    logger.warn("No 'id' field in response");
+                }
 
-            br.close();
+                // 닉네임 가져오기
+                if (jsonObject.has("properties")) {
+                    nickname = jsonObject.getJSONObject("properties").getString("nickname");
+                } else {
+                    logger.warn("No 'properties' field in response");
+                }
+
+                // 이메일 가져오기
+                if (jsonObject.has("kakao_account")) {
+                    JSONObject kakaoAccount = jsonObject.getJSONObject("kakao_account");
+                    if (kakaoAccount.has("email")) {
+                        email = kakaoAccount.getString("email");
+                    } else {
+                        logger.warn("No 'email' field in 'kakao_account'");
+                    }
+
+                    // 프로필 이미지 가져오기
+                    if (kakaoAccount.has("profile")) {
+                        JSONObject profile = kakaoAccount.getJSONObject("profile");
+                        if (profile.has("profile_image_url")) {
+                            profileImageUrl = profile.getString("profile_image_url");
+                        } else {
+                            logger.warn("No 'profile_image_url' field in 'profile'");
+                        }
+                    } else {
+                        logger.warn("No 'profile' field in 'kakao_account'");
+                    }
+                } else {
+                    logger.warn("No 'kakao_account' field in response");
+                }
+            }
 
         } catch (Exception e) {
             logger.error("Error getting user info", e);
         }
-        return userInfo;
+
+        return UserInfo.builder()
+                .id(id)
+                .nickname(nickname)
+                .email(email)
+                .profileImage(profileImageUrl)
+                .build();
     }
 }
