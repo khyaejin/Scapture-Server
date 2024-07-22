@@ -23,6 +23,8 @@ public class StadiumServiceImpl implements StadiumService{
     private final StadiumRepository stadiumRepository;
     private final ImageRepository imageRepository;
     private final S3Service s3Service;
+
+    // 관리자 - 경기장 생성
     @Override
     public ResponseEntity<CustomAPIResponse<?>> createStadium(CreateStadiumRequestDto data, List<MultipartFile> images) throws IOException {
         // 1. Stadium 생성
@@ -43,7 +45,6 @@ public class StadiumServiceImpl implements StadiumService{
         String dirName = stadium.getName();
         for (MultipartFile image : images) {
             String imageUrl = s3Service.upload(image, dirName);
-            System.out.println(imageUrl);
             Image stadiumImage = Image.builder()
                     .stadium(stadium)
                     .image(imageUrl)
@@ -62,4 +63,12 @@ public class StadiumServiceImpl implements StadiumService{
                 .status(HttpStatus.CREATED)
                 .body(responseBody);
     }
+    // Stadium - 경기장 조회
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> getStadiumByCityAndState(String city, String state) {
+        // 1. 조건에 맞는 Stadium 조회
+
+        return null;
+    }
+
 }

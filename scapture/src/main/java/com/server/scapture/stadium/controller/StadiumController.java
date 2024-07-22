@@ -21,7 +21,7 @@ public class StadiumController {
         return stadiumService.createStadium(data, images);
     }
     @GetMapping
-    ResponseEntity<CustomAPIResponse<?>> getStadiums() {
-        return null;
+    ResponseEntity<CustomAPIResponse<?>> getStadiums(@RequestParam("city") String city, @RequestParam("state") String state) {
+        return stadiumService.getStadiumByCityAndState(city, state);
     }
 }

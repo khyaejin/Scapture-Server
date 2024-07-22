@@ -11,4 +11,6 @@ import java.util.List;
 
 public interface StadiumService {
     ResponseEntity<CustomAPIResponse<?>> createStadium(CreateStadiumRequestDto data, List<MultipartFile> images) throws IOException;
+
+    ResponseEntity<CustomAPIResponse<?>> getStadiumByCityAndState(String city, String state);
 }
