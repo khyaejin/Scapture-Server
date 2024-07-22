@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter @Setter
 @AllArgsConstructor
 @Builder
-public class GetStadiumByCityAndStateResponseDto {
+public class GetStadiumResponseDto {
     private Long stadiumId;
     private String name;
     private String location;
