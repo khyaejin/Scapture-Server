@@ -7,6 +7,8 @@ import com.server.scapture.user.dto.KakaoUserInfo;
 import com.server.scapture.user.dto.NaverUserInfo;
 import com.server.scapture.user.dto.OAuth2UserInfo;
 import com.server.scapture.user.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.server.scapture.util.response.CustomAPIResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -17,12 +19,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.util.Map;
 
 @Slf4j
 @Component
-// @RequiredArgsConstructor : 생성자를 명시적으로 작성, 생성자 주입 위해..
 public class OAuthLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtUtil jwtUtil;
@@ -65,7 +65,7 @@ public class OAuthLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHand
         }
 
         // 정보 추출
-        String providerId = oAuth2UserInfo.getProviderId();
+        int providerId = Integer.parseInt(oAuth2UserInfo.getProviderId());
         String name = oAuth2UserInfo.getName();
 
         User existUser = userRepository.findByProviderId(providerId);
@@ -78,7 +78,7 @@ public class OAuthLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHand
             user = User.builder()
                     .name(name)
                     .provider(provider)
-                    .providerId(Integer.parseInt(providerId))
+                    .providerId(providerId)
                     .build();
             userRepository.save(user);
         } else {
@@ -94,9 +94,12 @@ public class OAuthLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHand
         // 액세스 토큰 발급
         String accessToken = jwtUtil.generateAccessToken(user.getId(), accessTokenExpirationTime);
 
-        // 이름과 액세스 토큰을 담아 리다이렉트
-        String encodedName = URLEncoder.encode(name, "UTF-8");
-        String redirectUri = String.format(this.redirectUri, encodedName, accessToken);
-        getRedirectStrategy().sendRedirect(request, response, redirectUri);
+        // 커스텀 응답 생성
+        CustomAPIResponse<Map<String, String>> customResponse = CustomAPIResponse.createSuccess(200, Map.of("token", accessToken), "카카오톡 로그인이 성공적으로 완료되었습니다.");
+
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        ObjectMapper objectMapper = new ObjectMapper();
+        response.getWriter().write(objectMapper.writeValueAsString(customResponse));
     }
 }
