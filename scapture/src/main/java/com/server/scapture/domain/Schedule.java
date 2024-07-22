@@ -36,5 +36,8 @@ public class Schedule {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd.E", Locale.KOREA);
         return startDate.format(formatter);
     }
-
+    public String convertMonthAndDay() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM.dd.E", Locale.KOREA);
+        return startDate.format(formatter);
+    }
 }
