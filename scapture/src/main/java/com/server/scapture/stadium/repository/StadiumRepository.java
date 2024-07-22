@@ -10,4 +10,5 @@ import java.util.Optional;
 @Repository
 public interface StadiumRepository extends JpaRepository<Stadium, Long> {
     List<Stadium> findByCityAndState(String city, String state);
+    List<Stadium> findByCity(String city);
 }
