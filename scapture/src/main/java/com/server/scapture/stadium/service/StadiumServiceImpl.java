@@ -16,7 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,18 +24,18 @@ public class StadiumServiceImpl implements StadiumService{
     private final ImageRepository imageRepository;
     private final S3Service s3Service;
     @Override
-    public ResponseEntity<CustomAPIResponse<?>> createStadium(CreateStadiumRequestDto createStadiumRequestDto, List<MultipartFile> images) throws IOException {
+    public ResponseEntity<CustomAPIResponse<?>> createStadium(CreateStadiumRequestDto data, List<MultipartFile> images) throws IOException {
         // 1. Stadium 생성
         // 1-1. Stadium 생성
         Stadium stadium = Stadium.builder()
-                .name(createStadiumRequestDto.getName())
-                .description(createStadiumRequestDto.getDescription())
-                .location(createStadiumRequestDto.getLocation())
-                .city(createStadiumRequestDto.getCity())
-                .state(createStadiumRequestDto.getState())
-                .hours(createStadiumRequestDto.getHours())
-                .isOutside(createStadiumRequestDto.isOutside())
-                .parking(createStadiumRequestDto.getParking())
+                .name(data.getName())
+                .description(data.getDescription())
+                .location(data.getLocation())
+                .city(data.getCity())
+                .state(data.getState())
+                .hours(data.getHours())
+                .isOutside(data.isOutside())
+                .parking(data.getParking())
                 .build();
         // 1-2. 저장
         stadiumRepository.save(stadium);
@@ -53,11 +52,11 @@ public class StadiumServiceImpl implements StadiumService{
         }
         // 3. Response
         // 3-1. data
-        CreateStadiumResponseDto data = CreateStadiumResponseDto.builder()
+        CreateStadiumResponseDto responseDto = CreateStadiumResponseDto.builder()
                 .stadiumId(stadium.getId())
                 .build();
         // 3-2. responseBody
-        CustomAPIResponse<CreateStadiumResponseDto> responseBody = CustomAPIResponse.createSuccess(HttpStatus.CREATED.value(), data, "경기장 생성 완료되었습니다.");
+        CustomAPIResponse<CreateStadiumResponseDto> responseBody = CustomAPIResponse.createSuccess(HttpStatus.CREATED.value(), responseDto, "경기장 생성 완료되었습니다.");
         // 3-3. ResponseEntity
         return ResponseEntity
                 .status(HttpStatus.CREATED)

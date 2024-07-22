@@ -10,5 +10,5 @@ import java.io.IOException;
 import java.util.List;
 
 public interface StadiumService {
-    ResponseEntity<CustomAPIResponse<?>> createStadium(CreateStadiumRequestDto createStadiumRequestDto, List<MultipartFile> images) throws IOException;
+    ResponseEntity<CustomAPIResponse<?>> createStadium(CreateStadiumRequestDto data, List<MultipartFile> images) throws IOException;
 }
