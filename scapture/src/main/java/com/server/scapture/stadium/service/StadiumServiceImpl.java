@@ -69,7 +69,6 @@ public class StadiumServiceImpl implements StadiumService{
     // Stadium - 경기장 조회
     @Override
     public ResponseEntity<CustomAPIResponse<?>> getStadiumByCityAndState(String city, String state) {
-        System.out.println(city + " " + state);
         // 1. 조건에 맞는 Stadium 조회
         List<Stadium> foundStadiums;
         // 1-1. City 1개 조회
