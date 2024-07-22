@@ -1,4 +1,4 @@
-package com.server.scapture.field.dto;
+package com.server.scapture.image.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter @Setter
 @AllArgsConstructor
 @Builder
-public class FieldAttributes {
-    private String name;
-    private String type;
+public class SimpleImageResponseDto {
+    private Long imageId;
+    private String image;
 }

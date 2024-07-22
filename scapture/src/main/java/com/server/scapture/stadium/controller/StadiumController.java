@@ -30,6 +30,6 @@ public class StadiumController {
     }
     @GetMapping("/{stadiumId}")
     ResponseEntity<CustomAPIResponse<?>> getStadiumDetail(@PathVariable("stadiumId") Long stadiumId) {
-        return null;
+        return stadiumService.getStadiumDetail(stadiumId);
     }
 }

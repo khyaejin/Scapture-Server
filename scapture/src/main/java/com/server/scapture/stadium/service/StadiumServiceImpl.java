@@ -1,10 +1,15 @@
 package com.server.scapture.stadium.service;
 
+import com.server.scapture.domain.Field;
 import com.server.scapture.domain.Image;
 import com.server.scapture.domain.Stadium;
+import com.server.scapture.field.dto.SimpleFieldResponseDto;
+import com.server.scapture.field.repository.FieldRepository;
+import com.server.scapture.image.dto.SimpleImageResponseDto;
 import com.server.scapture.image.repository.ImageRepository;
 import com.server.scapture.stadium.dto.CreateStadiumRequestDto;
 import com.server.scapture.stadium.dto.CreateStadiumResponseDto;
+import com.server.scapture.stadium.dto.GetStadiumDetailDto;
 import com.server.scapture.stadium.dto.GetStadiumResponseDto;
 import com.server.scapture.stadium.repository.StadiumRepository;
 import com.server.scapture.util.S3.S3Service;
@@ -25,6 +30,7 @@ import java.util.Optional;
 public class StadiumServiceImpl implements StadiumService{
     private final StadiumRepository stadiumRepository;
     private final ImageRepository imageRepository;
+    private final FieldRepository fieldRepository;
     private final S3Service s3Service;
 
     // 관리자 - 경기장 생성
@@ -157,7 +163,70 @@ public class StadiumServiceImpl implements StadiumService{
     // Stadium - 경기자 세부 조회
     @Override
     public ResponseEntity<CustomAPIResponse<?>> getStadiumDetail(Long stadiumId) {
-        return null;
+        // 1. Stadium 조회
+        Optional<Stadium> foundStadium = stadiumRepository.findById(stadiumId);
+        // 1-1. Stadium 조회 실패
+        if (foundStadium.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 경기장입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(responseBody);
+        }
+        // 1-2. Stadium 조회 성공
+        Stadium stadium = foundStadium.get();
+        // 2. Image 조회
+        List<SimpleImageResponseDto> images;
+        List<Image> foundImages = imageRepository.findByStadium(stadium);
+        // 2-1. Image 조회 실패
+        if (foundImages.isEmpty()) {
+            images = null;
+        }
+        // 2-2. Image 조회 성공
+        else {
+            images = new ArrayList<>();
+            for (Image image : foundImages) {
+                SimpleImageResponseDto imageDto = SimpleImageResponseDto.builder()
+                        .imageId(image.getId())
+                        .image(image.getImage())
+                        .build();
+                images.add(imageDto);
+            }
+        }
+        // 3. Field 조회
+        List<SimpleFieldResponseDto> fields;
+        List<Field> foundFields = fieldRepository.findByStadium(stadium);
+        // 3-1. Field 조회 실패
+        if (foundFields.isEmpty()) {
+            fields = null;
+        }
+        // 3-2. Field 조회 성공
+        else {
+            fields = new ArrayList<>();
+            for (Field field : foundFields) {
+                SimpleFieldResponseDto fieldDto = SimpleFieldResponseDto.builder()
+                        .fieldId(field.getId())
+                        .name(field.getName())
+                        .build();
+                fields.add(fieldDto);
+            }
+        }
+        // 4. Response
+        // 4-1. data
+        GetStadiumDetailDto data = GetStadiumDetailDto.builder()
+                .name(stadium.getName())
+                .description(stadium.getDescription())
+                .location(stadium.getLocation())
+                .isOutside(stadium.isOutside())
+                .parking(stadium.getParking())
+                .images(images)
+                .fields(fields)
+                .build();
+        // 4-2. responseBody
+        CustomAPIResponse<GetStadiumDetailDto> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "경기장 세부 조회 완료되었습니다.");
+        // 4-3. ResponseEntity
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(responseBody);
     }
 
 }
