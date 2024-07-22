@@ -112,7 +112,7 @@ public class StadiumServiceImpl implements StadiumService{
                 .status(HttpStatus.OK)
                 .body(responseBody);
     }
-
+    // Stadium - 경기장 검색
     @Override
     public ResponseEntity<CustomAPIResponse<?>> getStadiumByKeyword(String keyword) {
         // 1. Keyword를 통해 경기장 검색
@@ -153,6 +153,11 @@ public class StadiumServiceImpl implements StadiumService{
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(responseBody);
+    }
+    // Stadium - 경기자 세부 조회
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> getStadiumDetail(Long stadiumId) {
+        return null;
     }
 
 }
