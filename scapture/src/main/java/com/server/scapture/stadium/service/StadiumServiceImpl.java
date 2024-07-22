@@ -5,6 +5,7 @@ import com.server.scapture.domain.Stadium;
 import com.server.scapture.image.repository.ImageRepository;
 import com.server.scapture.stadium.dto.CreateStadiumRequestDto;
 import com.server.scapture.stadium.dto.CreateStadiumResponseDto;
+import com.server.scapture.stadium.dto.GetStadiumByCityAndStateResponseDto;
 import com.server.scapture.stadium.repository.StadiumRepository;
 import com.server.scapture.util.S3.S3Service;
 import com.server.scapture.util.response.CustomAPIResponse;
@@ -15,7 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -67,8 +70,35 @@ public class StadiumServiceImpl implements StadiumService{
     @Override
     public ResponseEntity<CustomAPIResponse<?>> getStadiumByCityAndState(String city, String state) {
         // 1. 조건에 맞는 Stadium 조회
+        List<Stadium> foundStadiums = stadiumRepository.findByCityAndState(city, state);
 
-        return null;
+        // 2. Response
+        // 2-1. data
+        List<GetStadiumByCityAndStateResponseDto> data = new ArrayList<>();
+        for (Stadium stadium : foundStadiums) {
+            // 2-1-1. Image 1개 찾기
+            Optional<Image> foundImage = imageRepository.findFirst1ByStadium(stadium);
+            String image = null;
+            // 2-1-2. Image가 없는 경우 -> null 값
+            if (foundImage.isPresent()) image = foundImage.get().getImage();
+            // 2-1-2. response 만들기
+            GetStadiumByCityAndStateResponseDto response = GetStadiumByCityAndStateResponseDto.builder()
+                    .stadiumId(stadium.getId())
+                    .name(stadium.getName())
+                    .location(stadium.getLocation())
+                    .hours(stadium.getHours())
+                    .isOutside(stadium.isOutside())
+                    .parking(stadium.getParking())
+                    .image(image)
+                    .build();
+            data.add(response);
+        }
+        // 2-2. ResponseBody
+        CustomAPIResponse<List<GetStadiumByCityAndStateResponseDto>> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "구장 조회 완료되었습니다.");
+        // 2-3. ResponseEntity
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(responseBody);
     }
 
 }
