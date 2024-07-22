@@ -75,6 +75,15 @@ public class StadiumServiceImpl implements StadiumService{
         if(state.isEmpty()) foundStadiums = stadiumRepository.findByCity(city);
         // 1-2. City State 2개 조회
         else foundStadiums = stadiumRepository.findByCityAndState(city, state);
+        // 조회된 컨텐츠 없음
+        if (foundStadiums.isEmpty()) {
+            // 1-1. responseBody
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.OK.value(), "조회된 경기장이 없습니다.");
+            // 1-2. ResponseEntity
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(responseBody);
+        }
         // 2. Response
         // 2-1. data
         List<GetStadiumResponseDto> data = new ArrayList<>();
@@ -97,7 +106,7 @@ public class StadiumServiceImpl implements StadiumService{
             data.add(response);
         }
         // 2-2. ResponseBody
-        CustomAPIResponse<List<GetStadiumResponseDto>> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "구장 조회 완료되었습니다.");
+        CustomAPIResponse<List<GetStadiumResponseDto>> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "경기장 조회 완료되었습니다.");
         // 2-3. ResponseEntity
         return ResponseEntity
                 .status(HttpStatus.OK)
