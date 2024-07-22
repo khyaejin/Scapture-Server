@@ -9,9 +9,8 @@ import com.server.scapture.user.dto.OAuth2UserInfo;
 import com.server.scapture.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -23,18 +22,26 @@ import java.util.Map;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
+// @RequiredArgsConstructor : 생성자를 명시적으로 작성, 생성자 주입 위해..
 public class OAuthLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
-    @Value("${jwt.redirect}")
-    private String REDIRECT_URI; // 프론트엔드로 Jwt 토큰을 리다이렉트할 URI
-
-    @Value("${jwt.access-token.expiration-time}")
-    private long ACCESS_TOKEN_EXPIRATION_TIME; // 액세스 토큰 유효기간
-
-    private OAuth2UserInfo oAuth2UserInfo = null;
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+    private final String redirectUri;
+    private final long accessTokenExpirationTime;
+
+    public OAuthLoginSuccessHandler(
+            JwtUtil jwtUtil,
+            UserRepository userRepository,
+            @Value("${jwt.redirect}") String redirectUri,
+            @Value("${jwt.access-token.expiration-time}") long accessTokenExpirationTime) {
+        this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
+        this.redirectUri = redirectUri;
+        this.accessTokenExpirationTime = accessTokenExpirationTime;
+    }
+
+    private OAuth2UserInfo oAuth2UserInfo = null;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
@@ -85,11 +92,11 @@ public class OAuthLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHand
         log.info("PROVIDER_ID : {}", providerId);
 
         // 액세스 토큰 발급
-        String accessToken = jwtUtil.generateAccessToken(user.getId(), ACCESS_TOKEN_EXPIRATION_TIME);
+        String accessToken = jwtUtil.generateAccessToken(user.getId(), accessTokenExpirationTime);
 
         // 이름과 액세스 토큰을 담아 리다이렉트
         String encodedName = URLEncoder.encode(name, "UTF-8");
-        String redirectUri = String.format(REDIRECT_URI, encodedName, accessToken);
+        String redirectUri = String.format(this.redirectUri, encodedName, accessToken);
         getRedirectStrategy().sendRedirect(request, response, redirectUri);
     }
 }
