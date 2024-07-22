@@ -5,12 +5,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter @Setter
 @AllArgsConstructor
 @Builder
-public class CreateFieldRequestDto {
-    private Long stadiumId;
-    private List<FieldAttributeResponseDto> fields;
+public class FieldAttributeResponseDto {
+    private String name;
+    private String type;
 }

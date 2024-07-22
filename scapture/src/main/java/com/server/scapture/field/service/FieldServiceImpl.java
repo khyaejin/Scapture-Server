@@ -4,7 +4,7 @@ import com.server.scapture.domain.Field;
 import com.server.scapture.domain.Stadium;
 import com.server.scapture.field.dto.CreateFiedlResponseDto;
 import com.server.scapture.field.dto.CreateFieldRequestDto;
-import com.server.scapture.field.dto.FieldAttributes;
+import com.server.scapture.field.dto.FieldAttributeResponseDto;
 import com.server.scapture.field.repository.FieldRepository;
 import com.server.scapture.stadium.repository.StadiumRepository;
 import com.server.scapture.util.response.CustomAPIResponse;
@@ -41,7 +41,7 @@ public class FieldServiceImpl implements FieldService{
         // 2-1. data
         List<CreateFiedlResponseDto> data = new ArrayList<>();
         // 2-2. 구장 생성
-        for (FieldAttributes fieldAttributes : createFieldRequestDto.getFields()) {
+        for (FieldAttributeResponseDto fieldAttributes : createFieldRequestDto.getFields()) {
             Field field = Field.builder()
                     .stadium(stadium)
                     .name(fieldAttributes.getName())

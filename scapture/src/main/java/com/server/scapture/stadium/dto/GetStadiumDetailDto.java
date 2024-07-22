@@ -1,21 +1,23 @@
 package com.server.scapture.stadium.dto;
 
+import com.server.scapture.field.dto.SimpleFieldResponseDto;
+import com.server.scapture.image.dto.SimpleImageResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
+import java.util.List;
+
+@Getter @Setter
 @AllArgsConstructor
 @Builder
-public class CreateStadiumRequestDto {
+public class GetStadiumDetailDto {
     private String name;
     private String description;
     private String location;
-    private String city;
-    private String state;
-    private String hours;
     private Boolean isOutside;
     private String parking;
+    private List<SimpleImageResponseDto> images;
+    private List<SimpleFieldResponseDto> fields;
 }
