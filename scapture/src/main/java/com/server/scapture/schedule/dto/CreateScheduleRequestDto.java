@@ -20,12 +20,11 @@ public class CreateScheduleRequestDto {
     private String endDate;
     private int price;
 
-    public LocalDateTime convertStartDate() {
+    public LocalDateTime convert(boolean flag) {
+        String dateString;
+        if (flag) dateString = startDate;
+        else dateString = endDate;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        return LocalDateTime.parse(startDate, formatter);
-    }
-    public LocalDateTime convertEndDate() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        return LocalDateTime.parse(endDate, formatter);
+        return LocalDateTime.parse(dateString, formatter);
     }
 }

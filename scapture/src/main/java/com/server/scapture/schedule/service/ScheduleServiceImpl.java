@@ -36,8 +36,8 @@ public class ScheduleServiceImpl implements ScheduleService{
             // 2. Schedule 생성
             Schedule schedule = Schedule.builder()
                     .field(field)
-                    .startDate(createScheduleRequestDto.convertStartDate())
-                    .endDate(createScheduleRequestDto.convertEndDate())
+                    .startDate(createScheduleRequestDto.convert(true))
+                    .endDate(createScheduleRequestDto.convert(false))
                     .price(createScheduleRequestDto.getPrice())
                     .build();
             // 3. Schedule 저장
