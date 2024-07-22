@@ -32,4 +32,9 @@ public class Schedule {
         String formattedEndDate = endDate.format(formatter);
         return formattedStartDate + "~" + formattedEndDate;
     }
+    public String convertAll() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd.E", Locale.KOREA);
+        return startDate.format(formatter);
+    }
+
 }
