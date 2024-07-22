@@ -4,6 +4,7 @@ import com.server.scapture.domain.Image;
 import com.server.scapture.domain.Stadium;
 import com.server.scapture.image.repository.ImageRepository;
 import com.server.scapture.stadium.dto.CreateStadiumRequestDto;
+import com.server.scapture.stadium.dto.CreateStadiumResponseDto;
 import com.server.scapture.stadium.repository.StadiumRepository;
 import com.server.scapture.util.response.CustomAPIResponse;
 import lombok.RequiredArgsConstructor;
@@ -47,8 +48,11 @@ public class StadiumServiceImpl implements StadiumService{
         }
         // 3. Response
         // 3-1. data
+        CreateStadiumResponseDto data = CreateStadiumResponseDto.builder()
+                .stadiumId(stadium.getId())
+                .build();
         // 3-2. responseBody
-        CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.CREATED.value(), "경기장 생성 완료되었습니다.");
+        CustomAPIResponse<CreateStadiumResponseDto> responseBody = CustomAPIResponse.createSuccess(HttpStatus.CREATED.value(), data, "경기장 생성 완료되었습니다.");
         // 3-3. ResponseEntity
         return ResponseEntity
                 .status(HttpStatus.CREATED)
