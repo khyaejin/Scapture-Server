@@ -108,13 +108,13 @@ public class StadiumServiceImpl implements StadiumService{
     public ResponseEntity<CustomAPIResponse<?>> getStadiumByKeyword(String keyword) {
         // 1. Keyword를 통해 경기장 검색
         List<Stadium> foundStadium = stadiumRepository.findByNameContaining(keyword);
-        // No Content
+        // 조회된 컨텐츠 없음
         if (foundStadium.isEmpty()) {
             // 1-1. responseBody
-            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.NO_CONTENT.value(), "조회된 경기장이 없습니다.");
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.OK.value(), "조회된 경기장이 없습니다.");
             // 1-2. ResponseEntity
             return ResponseEntity
-                    .status(HttpStatus.NO_CONTENT)
+                    .status(HttpStatus.OK)
                     .body(responseBody);
         }
         // 2. Response
