@@ -56,4 +56,9 @@ public class VideoServiceImpl implements VideoService{
                 .status(HttpStatus.CREATED)
                 .body(responseBody);
     }
+
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> getVideos(Long scheduleId) {
+        return null;
+    }
 }
