@@ -12,4 +12,5 @@ public interface VideoService {
     ResponseEntity<CustomAPIResponse<?>> createVideo(VideoCreateRequestDto videoCreateRequestDto);
     ResponseEntity<CustomAPIResponse<?>> getVideos(Long scheduleId);
     ResponseEntity<CustomAPIResponse<?>> getVideosByLikeCount();
+    ResponseEntity<CustomAPIResponse<?>> createLike(String header, Long videoId);
 }

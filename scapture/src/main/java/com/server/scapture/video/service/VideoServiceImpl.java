@@ -136,4 +136,8 @@ public class VideoServiceImpl implements VideoService{
                 .status(HttpStatus.OK)
                 .body(responseBody);
     }
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> createLike(String header, Long videoId) {
+        return null;
+    }
 }
