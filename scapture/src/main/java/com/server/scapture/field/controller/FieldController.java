@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class FieldController {
     private final FieldService fieldService;
     @PostMapping
-    ResponseEntity<CustomAPIResponse<?>> createField(@RequestBody CreateFieldRequestDto createFieldRequestDto) {
+    public ResponseEntity<CustomAPIResponse<?>> createField(@RequestBody CreateFieldRequestDto createFieldRequestDto) {
         return fieldService.createField(createFieldRequestDto);
     }
 }

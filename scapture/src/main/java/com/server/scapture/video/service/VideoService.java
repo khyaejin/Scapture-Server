@@ -10,4 +10,5 @@ import java.util.List;
 
 public interface VideoService {
     ResponseEntity<CustomAPIResponse<?>> createVideo(VideoCreateRequestDto videoCreateRequestDto);
+    ResponseEntity<CustomAPIResponse<?>> getVideos(Long scheduleId);
 }
