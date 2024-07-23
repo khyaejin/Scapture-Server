@@ -17,7 +17,7 @@ import java.util.Date;
 public class JwtUtil {
 
     @Value("${jwt.secret}")
-    private String secretKey = "z4FmaD1QnM2Fp1XnT6D2O2h1Q2D3P4R5S6T7U8V9W0X1Y2Z3a4b5c6d7e8f9g0h1";
+    private String secretKey;
 
     private SecretKey getSigningKey() {
         // Base64 URL Decoding을 사용하여 키를 디코딩합니다.

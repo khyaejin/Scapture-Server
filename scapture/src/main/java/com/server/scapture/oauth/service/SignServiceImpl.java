@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -26,13 +27,17 @@ public class SignServiceImpl implements SignService {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
+    @Value("${spring.security.oauth2.client.registration.kakao.client-id}") //-> 후에 오류 수정해야함 jwtUtil 클래스 참고
+    private String kakaoApiKey;
+    @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
+    private String kakaoRedirectUri;
+    @Value("${spring.security.oauth2.client.provider.kakao.token-uri}")
+    private String reqUrl;
+    @Value("${spring.security.oauth2.client.registration.kakao.client-secret}")
+    private String kakaoClientSecret;
     @Override
     public ResponseEntity<CustomAPIResponse<?>> getAccessToken(String code) {
-        String kakaoApiKey = "024871f91fe647ce7262bd022bd1afc2";
-        String kakaoRedirectUri = "http://localhost:3000/oauth/redirected/kakao";
         String accessToken;
-        String reqUrl = "https://kauth.kakao.com/oauth/token";
-        String kakaoClientSecret = "8hIjcRxQfSSvvG8NV1nuksp9k2c9PEUP";
         try {
             URL url = new URL(reqUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
