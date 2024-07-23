@@ -1,8 +1,11 @@
 package com.server.scapture.oauth.service;
 
+import com.server.scapture.domain.Role;
+import com.server.scapture.domain.User;
 import com.server.scapture.oauth.dto.UserInfo;
+import com.server.scapture.user.repository.UserRepository;
+import com.server.scapture.util.entity.OAuthException;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.User;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,14 +14,14 @@ import org.springframework.stereotype.Service;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class SignServiceImpl implements SignService {
 
     private static final Logger logger = LoggerFactory.getLogger(SignServiceImpl.class);
+    private final UserRepository userRepository;
 
     @Override
     public String getAccessToken(String code) {
@@ -31,11 +34,9 @@ public class SignServiceImpl implements SignService {
             URL url = new URL(reqUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
-            // 필수 헤더 세팅
             conn.setRequestProperty("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
-            conn.setDoOutput(true); // OutputStream으로 POST 데이터를 넘겨주겠다는 옵션.
+            conn.setDoOutput(true);
 
-            // 필수 쿼리 파라미터 세팅
             StringBuilder sb = new StringBuilder();
             sb.append("grant_type=authorization_code");
             sb.append("&client_id=").append(kakaoApiKey);
@@ -43,54 +44,46 @@ public class SignServiceImpl implements SignService {
             sb.append("&redirect_uri=").append(kakaoRedirectUri);
             sb.append("&code=").append(code);
 
-            // POST 데이터 전송
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream()));
-            bw.write(sb.toString());
-            bw.flush();
+            try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream()))) {
+                bw.write(sb.toString());
+                bw.flush();
+            }
 
-            // 응답 코드 확인
             int responseCode = conn.getResponseCode();
             logger.info("Token Response Code: {}", responseCode);
 
-            // 응답 읽기
-            BufferedReader br;
-            if (responseCode >= 200 && responseCode < 300) {
-                br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            } else {
-                br = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-            }
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(
+                    responseCode >= 200 && responseCode < 300 ? conn.getInputStream() : conn.getErrorStream()))) {
+                String line;
+                StringBuilder responseSb = new StringBuilder();
+                while ((line = br.readLine()) != null) {
+                    responseSb.append(line);
+                }
+                String result = responseSb.toString();
+                logger.info("Token Response Body: {}", result);
 
-            String line;
-            StringBuilder responseSb = new StringBuilder();
-            while ((line = br.readLine()) != null) {
-                responseSb.append(line);
+                JSONObject jsonObject = new JSONObject(result);
+                if (jsonObject.has("access_token")) {
+                    accessToken = jsonObject.getString("access_token");
+                } else {
+                    throw new OAuthException("No 'access_token' field in token response");
+                }
             }
-            String result = responseSb.toString();
-            logger.info("Token Response Body: {}", result);
-
-            // JSON 파싱
-            JSONObject jsonObject = new JSONObject(result);
-            if (jsonObject.has("access_token")) {
-                accessToken = jsonObject.getString("access_token");
-            } else {
-                logger.warn("No 'access_token' field in token response");
-            }
-
-            br.close();
-            bw.close();
         } catch (Exception e) {
             logger.error("Error getting access token", e);
+            throw new OAuthException("Error getting access token");
         }
         return accessToken;
     }
 
-
     @Override
     public UserInfo getUserInfo(String accessToken) {
-        long id = 0;
+        String providerId = null;
+        String provider = "kakao";
         String nickname = null;
         String email = null;
         String profileImageUrl = null;
+        Role role = Role.BASIC;
 
         String reqUrl = "https://kapi.kakao.com/v2/user/me";
         try {
@@ -103,6 +96,10 @@ public class SignServiceImpl implements SignService {
             int responseCode = conn.getResponseCode();
             logger.info("Response Code: {}", responseCode);
 
+            if (responseCode == 401) { // Unauthorized - token expired or invalid
+                throw new OAuthException("Access token expired or invalid");
+            }
+
             try (BufferedReader br = new BufferedReader(new InputStreamReader(
                     responseCode >= 200 && responseCode <= 300 ? conn.getInputStream() : conn.getErrorStream()))) {
                 String line;
@@ -113,40 +110,27 @@ public class SignServiceImpl implements SignService {
                 String result = responseSb.toString();
                 logger.info("User Info Response Body: {}", result);
 
-                // JSON 파싱
                 JSONObject jsonObject = new JSONObject(result);
 
-                // ID 가져오기
                 if (jsonObject.has("id")) {
-                    id = jsonObject.getLong("id");
+                    providerId = String.valueOf(jsonObject.getLong("id"));
                 } else {
                     logger.warn("No 'id' field in response");
                 }
 
-                // 닉네임 가져오기
                 if (jsonObject.has("properties")) {
-                    nickname = jsonObject.getJSONObject("properties").getString("nickname");
+                    nickname = jsonObject.getJSONObject("properties").optString("nickname", null);
                 } else {
                     logger.warn("No 'properties' field in response");
                 }
 
-                // 이메일 가져오기
                 if (jsonObject.has("kakao_account")) {
                     JSONObject kakaoAccount = jsonObject.getJSONObject("kakao_account");
-                    if (kakaoAccount.has("email")) {
-                        email = kakaoAccount.getString("email");
-                    } else {
-                        logger.warn("No 'email' field in 'kakao_account'");
-                    }
+                    email = kakaoAccount.optString("email", null);
 
-                    // 프로필 이미지 가져오기
                     if (kakaoAccount.has("profile")) {
                         JSONObject profile = kakaoAccount.getJSONObject("profile");
-                        if (profile.has("profile_image_url")) {
-                            profileImageUrl = profile.getString("profile_image_url");
-                        } else {
-                            logger.warn("No 'profile_image_url' field in 'profile'");
-                        }
+                        profileImageUrl = profile.optString("profile_image_url", null);
                     } else {
                         logger.warn("No 'profile' field in 'kakao_account'");
                     }
@@ -157,13 +141,33 @@ public class SignServiceImpl implements SignService {
 
         } catch (Exception e) {
             logger.error("Error getting user info", e);
+            throw new OAuthException("Error getting user info");
         }
 
         return UserInfo.builder()
-                .id(id)
-                .nickname(nickname)
+                .provider(provider)
+                .providerId(providerId)
+                .name(nickname)
                 .email(email)
-                .profileImage(profileImageUrl)
+                .image(profileImageUrl)
+                .role(role)
                 .build();
+    }
+
+    @Override
+    public User login(UserInfo userInfo) {
+        Optional<User> foundUser = userRepository.findByProviderAndProviderId(userInfo.getProvider(), userInfo.getProviderId());
+
+        //회원가입
+        if (foundUser.isEmpty()) {
+            User user = userInfo.toEntity();
+            userRepository.save(user);
+            logger.info("User 회원가입 성공: {}", user.getName());
+            return user;
+        } else { //로그인
+            User user = foundUser.get();
+            logger.info("User 로그인 성공: {}", user.getName());
+            return user;
+        }
     }
 }
