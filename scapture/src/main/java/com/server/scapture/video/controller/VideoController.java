@@ -38,4 +38,8 @@ public class VideoController {
     public ResponseEntity<CustomAPIResponse<?>> createLike(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("videoId") Long videoId) {
         return videoService.createLike(header, videoId);
     }
+    @DeleteMapping("/{videoId}/likes")
+    public ResponseEntity<CustomAPIResponse<?>> deleteLike(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("videoId") Long videoId) {
+        return videoService.deleteLike(header, videoId);
+    }
 }

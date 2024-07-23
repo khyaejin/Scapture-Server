@@ -163,28 +163,77 @@ public class VideoServiceImpl implements VideoService{
         // 2-2. 성공
         Video video = foundVideo.get();
         // 3. 영상_좋아요 저장
-        // 3-1. 영상_좋아요 생성
-        VideoLike videoLike = VideoLike.builder()
-                .video(video)
-                .user(user)
-                .build();
-        // 3-2. 중복 데이터 검사
-        boolean isExist = videoLikeRepository.existsByVideoAndUser(video, user);
-        if (isExist) {
+        // 3-1. 중복 데이터 검사
+        Optional<VideoLike> foundVideoLike = videoLikeRepository.findByVideoAndUser(video, user);
+        if (foundVideoLike.isPresent()) {
             CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.CONFLICT.value(), "이미 존재하는 좋아요입니다.");
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
                     .body(responseBody);
         }
+        // 3-2. 영상_좋아요 생성
+        VideoLike videoLike = VideoLike.builder()
+                .video(video)
+                .user(user)
+                .build();
         // 3-3. 저장
         videoLikeRepository.save(videoLike);
         // 4. 영상 좋아요 증가
         video.increaseLikeCount();
+        videoRepository.save(video);
         // 5. Response
         // 5-1. Response
         CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.CREATED.value(), "영상 좋아요 추가 완료되었습니다.");
         return ResponseEntity
                 .status(HttpStatus.CREATED)
+                .body(responseBody);
+    }
+
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> deleteLike(String header, Long videoId) {
+        // 1. User 조회
+        Optional<User> foundUser = jwtUtil.findUserByJwtToken(header);
+        // 1-1. 실패
+        if (foundUser.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 사용자입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(responseBody);
+        }
+        // 1-2. 성공
+        User user = foundUser.get();
+        // 2. Video 조회
+        Optional<Video> foundVideo = videoRepository.findById(videoId);
+        // 2-1. 실패
+        if (foundVideo.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 영상입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(responseBody);
+        }
+        // 2-2. 성공
+        Video video = foundVideo.get();
+        // 3. 영상_좋아요 해제
+        // 3-1. 데이터 유무 검사
+        Optional<VideoLike> foundVideoLike = videoLikeRepository.findByVideoAndUser(video, user);
+        if (foundVideoLike.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 좋아요입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(responseBody);
+        }
+        // 3-2. 영상_좋아요 탐색
+        VideoLike videoLike = foundVideoLike.get();
+        // 3-3. 삭제
+        videoLikeRepository.delete(videoLike);
+        // 4. 영상 좋아요 감소
+        video.decreaseLikeCount();
+        videoRepository.save(video);
+        // 5. Response
+        // 5-1. Response
+        CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.NO_CONTENT.value(), "영상 좋아요 해제 완료되었습니다.");
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
                 .body(responseBody);
     }
 }
