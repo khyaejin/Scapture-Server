@@ -214,3 +214,6 @@ Temporary Items
 
 ######## SECRET KEY INFO
 application-secret.properties
+
+##log template
+logback-spring.xml
