@@ -2,18 +2,18 @@ package com.server.scapture.stadium.service;
 
 import com.server.scapture.domain.Field;
 import com.server.scapture.domain.Image;
+import com.server.scapture.domain.Schedule;
 import com.server.scapture.domain.Stadium;
 import com.server.scapture.field.dto.SimpleFieldResponseDto;
 import com.server.scapture.field.repository.FieldRepository;
 import com.server.scapture.image.dto.SimpleImageResponseDto;
 import com.server.scapture.image.repository.ImageRepository;
-import com.server.scapture.stadium.dto.CreateStadiumRequestDto;
-import com.server.scapture.stadium.dto.CreateStadiumResponseDto;
-import com.server.scapture.stadium.dto.GetStadiumDetailDto;
-import com.server.scapture.stadium.dto.GetStadiumResponseDto;
+import com.server.scapture.schedule.repository.ScheduleRepository;
+import com.server.scapture.stadium.dto.*;
 import com.server.scapture.stadium.repository.StadiumRepository;
 import com.server.scapture.util.S3.S3Service;
 import com.server.scapture.util.response.CustomAPIResponse;
+import com.server.scapture.video.repository.VideoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +31,8 @@ public class StadiumServiceImpl implements StadiumService{
     private final StadiumRepository stadiumRepository;
     private final ImageRepository imageRepository;
     private final FieldRepository fieldRepository;
+    private final ScheduleRepository scheduleRepository;
+    private final VideoRepository videoRepository;
     private final S3Service s3Service;
 
     // 관리자 - 경기장 생성
@@ -231,7 +233,37 @@ public class StadiumServiceImpl implements StadiumService{
     // Stadium - 구장 운영 시간 조회
     @Override
     public ResponseEntity<CustomAPIResponse<?>> getScheduleByFieldAndDate(Long fieldId, int month, int day) {
-        return null;
+        // 1. Field 조회
+        Optional<Field> foundField = fieldRepository.findById(fieldId);
+        // 1-1. 실패
+        if (foundField.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 구장입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(responseBody);
+        }
+        // 1-2. 성공
+        Field field = foundField.get();
+        // 2. Schedule 조회
+        List<Schedule> scheduleList = scheduleRepository.findScheduleByFieldBetweenMonthAndDay(field, month, day);
+        System.out.println(scheduleList.size());
+        // 3. Response
+        // 3-1. data
+        List<GetScheduleByFieldAndDateResponseDto> data = new ArrayList<>();
+        for (Schedule schedule : scheduleList) {
+            GetScheduleByFieldAndDateResponseDto responseDto = GetScheduleByFieldAndDateResponseDto.builder()
+                    .scheduleId(schedule.getId())
+                    .hours(schedule.convertHourAndMin())
+                    .videoCount(videoRepository.countBySchedule(schedule))
+                    .build();
+            data.add(responseDto);
+        }
+        // 3-2. responseBody
+        CustomAPIResponse<List<GetScheduleByFieldAndDateResponseDto>> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "구장 운영 일정 조회 완료되었습니다.");
+        // 3-3. ResponseEntity
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(responseBody);
     }
 
 }

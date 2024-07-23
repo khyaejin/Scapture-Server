@@ -28,12 +28,12 @@ public class StadiumController {
     ResponseEntity<CustomAPIResponse<?>> getStadiumsByKeyword(@RequestParam("keyword") String keyword){
         return stadiumService.getStadiumByKeyword(keyword);
     }
-    @GetMapping("/{stadiumId}")
+    @GetMapping("/{stadiumId}/detail")
     ResponseEntity<CustomAPIResponse<?>> getStadiumDetail(@PathVariable("stadiumId") Long stadiumId) {
         return stadiumService.getStadiumDetail(stadiumId);
     }
     @GetMapping("/{fieldId}")
     ResponseEntity<CustomAPIResponse<?>> getScheduleByFieldAndDate(@PathVariable("fieldId") Long fieldId, @RequestParam("month") int month, @RequestParam("day") int day) {
-        return null;
+        return stadiumService.getScheduleByFieldAndDate(fieldId, month, day);
     }
 }
