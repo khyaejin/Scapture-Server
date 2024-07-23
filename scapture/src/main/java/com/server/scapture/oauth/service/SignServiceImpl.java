@@ -27,7 +27,7 @@ public class SignServiceImpl implements SignService {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
-    @Value("${spring.security.oauth2.client.registration.kakao.client-id}") //-> 후에 오류 수정해야함 jwtUtil 클래스 참고
+    @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
     private String kakaoApiKey;
     @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
     private String kakaoRedirectUri;
