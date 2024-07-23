@@ -1,10 +1,8 @@
 package com.server.scapture.video.service;
 
-import com.server.scapture.domain.Field;
-import com.server.scapture.domain.Schedule;
-import com.server.scapture.domain.Stadium;
-import com.server.scapture.domain.Video;
+import com.server.scapture.domain.*;
 import com.server.scapture.field.repository.FieldRepository;
+import com.server.scapture.oauth.jwt.JwtUtil;
 import com.server.scapture.schedule.repository.ScheduleRepository;
 import com.server.scapture.schedule.service.ScheduleService;
 import com.server.scapture.stadium.repository.StadiumRepository;
@@ -15,6 +13,8 @@ import com.server.scapture.video.dto.GetVideosResponseDto;
 import com.server.scapture.video.dto.VideoCreateDetailDto;
 import com.server.scapture.video.dto.VideoCreateRequestDto;
 import com.server.scapture.video.repository.VideoRepository;
+import com.server.scapture.videoLike.repository.VideoLikeRepository;
+import io.jsonwebtoken.Jwt;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +34,8 @@ public class VideoServiceImpl implements VideoService{
     private final ScheduleRepository scheduleRepository;
     private final FieldRepository fieldRepository;
     private final StadiumRepository stadiumRepository;
+    private final VideoLikeRepository videoLikeRepository;
+    private final JwtUtil jwtUtil;
     @Override
     public ResponseEntity<CustomAPIResponse<?>> createVideo(VideoCreateRequestDto videoCreateRequestDto) {
         // 1. 운영 일정 조회
@@ -138,6 +140,51 @@ public class VideoServiceImpl implements VideoService{
     }
     @Override
     public ResponseEntity<CustomAPIResponse<?>> createLike(String header, Long videoId) {
-        return null;
+        // 1. User 조회
+        Optional<User> foundUser = jwtUtil.findUserByJwtToken(header);
+        // 1-1. 실패
+        if (foundUser.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 사용자입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(responseBody);
+        }
+        // 1-2. 성공
+        User user = foundUser.get();
+        // 2. Video 조회
+        Optional<Video> foundVideo = videoRepository.findById(videoId);
+        // 2-1. 실패
+        if (foundVideo.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 영상입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(responseBody);
+        }
+        // 2-2. 성공
+        Video video = foundVideo.get();
+        // 3. 영상_좋아요 저장
+        // 3-1. 영상_좋아요 생성
+        VideoLike videoLike = VideoLike.builder()
+                .video(video)
+                .user(user)
+                .build();
+        // 3-2. 중복 데이터 검사
+        boolean isExist = videoLikeRepository.existsByVideoAndUser(video, user);
+        if (isExist) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.CONFLICT.value(), "이미 존재하는 좋아요입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(responseBody);
+        }
+        // 3-3. 저장
+        videoLikeRepository.save(videoLike);
+        // 4. 영상 좋아요 증가
+        video.increaseLikeCount();
+        // 5. Response
+        // 5-1. Response
+        CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.CREATED.value(), "영상 좋아요 추가 완료되었습니다.");
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(responseBody);
     }
 }

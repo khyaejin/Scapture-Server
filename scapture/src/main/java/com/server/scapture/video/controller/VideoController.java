@@ -36,6 +36,6 @@ public class VideoController {
 
     @PostMapping("/{videoId}/likes")
     public ResponseEntity<CustomAPIResponse<?>> createLike(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("videoId") Long videoId) {
-        return null;
+        return videoService.createLike(header, videoId);
     }
 }

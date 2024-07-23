@@ -24,4 +24,12 @@ public class Video {
     private String video;           // 영상
     @ColumnDefault("0")
     private int likeCount;          // 좋아요 수
+
+    public void increaseLikeCount() {
+        this.likeCount++;
+    }
+
+    public void decreaseLikeCount() {
+        this.likeCount--;
+    }
 }
