@@ -68,8 +68,8 @@ public class SignServiceImpl implements SignService {
                 if (jsonObject.has("access_token")) {
                     accessToken = jsonObject.getString("access_token");
                 } else {
-                    throw new OAuthException(" 'access_token' field in token response");
-                }
+                    CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(401,"이미 사용되었거나 유효하지 않은 인가 코드 입니다.");
+                    return ResponseEntity.status(401).body(res);                }
             }
         } catch (Exception e) {
             logger.error("Error getting access token", e);
