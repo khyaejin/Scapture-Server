@@ -1,5 +1,6 @@
 package com.server.scapture.oauth.service;
 
+import com.server.scapture.domain.User;
 import com.server.scapture.oauth.dto.UserInfo;
 import com.server.scapture.util.response.CustomAPIResponse;
 import org.springframework.http.ResponseEntity;
@@ -12,5 +13,5 @@ public interface SignService {
     UserInfo getUserInfo(String accessToken);
 
     //카카오 소셜로그인 : 로그인/회원가입
-    ResponseEntity<CustomAPIResponse<Object>> login(UserInfo userInfo);
+    User login(UserInfo userInfo);
 }

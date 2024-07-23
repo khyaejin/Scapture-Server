@@ -177,26 +177,21 @@ public class SignServiceImpl implements SignService {
 
     //카카오 소셜로그인 : 로그인/회원가입
     @Override
-    public ResponseEntity<CustomAPIResponse<Object>> login(UserInfo userInfo) {
+    public User login(UserInfo userInfo) {
         // 해당 provider, providerId를 가진 회원이 존재하는가 판별
         String provider = userInfo.getProvider();
         String providerId = userInfo.getProviderId();
 
         Optional<User> foundUser = userRepository.findByProviderAndProviderId(provider, providerId);
 
-        // 회원가입 : 해당 회원이 존재하지 않을 시
+        // 회원가입 : 해당 회원이 존재하지 않을 시 -> 새로운 User 생성 후 리턴
         if (foundUser.isEmpty()) {
             User user = userInfo.toEntity();
             userRepository.save(user);
+            return user;
         }
 
-        // 로그인 : 해당 회원이 존재할 시
-        UserLoginResponseDto data = UserLoginResponseDto.builder()
-                .user_id(user.getId())
-                .build();
-        CustomAPIResponse<UserLoginResponseDto> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "로그인 성공 하였습니다.");
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(responseBody);
+        // 로그인 : 해당 회원이 존재할 시 -> 기존 User 리턴
+        return foundUser.get();
     }
 }

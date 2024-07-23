@@ -1,5 +1,6 @@
 package com.server.scapture.oauth.controller;
 
+import com.server.scapture.domain.User;
 import com.server.scapture.oauth.dto.UserInfo;
 import com.server.scapture.oauth.service.SignService;
 import com.server.scapture.util.response.CustomAPIResponse;
@@ -44,7 +45,7 @@ public class SignController {
             logger.info("User_Image: {}", userInfo.getImage());
 
         // 4. 로그인/회원가입
-        signService.login(userInfo);
+        User user = signService.login(userInfo);
 
         // 5. jwt 토큰 발급
 
