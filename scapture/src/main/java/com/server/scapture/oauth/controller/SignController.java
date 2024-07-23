@@ -2,27 +2,31 @@ package com.server.scapture.oauth.controller;
 
 import com.server.scapture.domain.User;
 import com.server.scapture.oauth.dto.UserInfo;
+import com.server.scapture.oauth.jwt.JwtUtil;
 import com.server.scapture.oauth.service.SignService;
 import com.server.scapture.util.response.CustomAPIResponse;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
-@RequestMapping("api/oauth")
+@RequestMapping("api/oauth/social")
 @RequiredArgsConstructor
 public class SignController {
     private static final Logger logger = LoggerFactory.getLogger(SignController.class);
     private final SignService signService;
+    private final JwtUtil jwtUtil;
 
     //카카오 소셜 로그인
-    @PostMapping(value = "/social/kakao")
+    @PostMapping(value = "/kakao")
     public ResponseEntity<CustomAPIResponse<?>> kakaoLogin(@RequestParam String code) {
         // 1. 인가 코드 받기 (@RequestParam String code)
         logger.info("Request_Code: {}", code);
@@ -57,5 +61,20 @@ public class SignController {
             return ResponseEntity.status(loginResponse.getStatusCode()).body(loginResponse.getBody());
         }
         return ResponseEntity.status(loginResponse.getStatusCode()).body(loginResponse.getBody());
+    }
+
+    @GetMapping(value = "/test/find/user")
+    public Optional<User> testGetUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+        return jwtUtil.findUserByJwtToken(authorizationHeader);
+    }
+
+    @GetMapping(value = "/test/find/user/fail")
+    public User testGetUserFail(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+        Optional<User> foundUser =  jwtUtil.findUserByJwtToken(authorizationHeader);
+        if (foundUser.isEmpty()) {
+            // 적절한 예외처리
+        }
+        User user = foundUser.get();
+        return user;
     }
 }
