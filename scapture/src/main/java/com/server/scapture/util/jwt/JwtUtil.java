@@ -1,44 +1,72 @@
 package com.server.scapture.util.jwt;
 
-import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
 import java.util.Date;
 
+@Slf4j
+@Component
 public class JwtUtil {
-    private static final String SECRET_KEY = "your-secret-key";
-    private static final long EXPIRATION_TIME = 86400000; // 1 day
+    @Value("${jwt.secret}")
+    private String SECRET_KEY;
 
-    // JWT 토큰 생성 메서드
-    public static String createToken(String provider, String providerId) {
+    private SecretKey getSigningKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(this.SECRET_KEY);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    // 액세스 토큰을 발급하는 메서드
+    public String generateAccessToken(Long userId, long expirationMillis) {
+        log.info("액세스 토큰이 발행되었습니다.");
+
         return Jwts.builder()
-                .setSubject(providerId)
-                .claim("provider", provider)
-                .claim("providerId", providerId)
+                .claim("userId", userId.toString()) // 클레임에 userId 추가
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(SignatureAlgorithm.HS512, SECRET_KEY)
+                .setExpiration(new Date(System.currentTimeMillis() + expirationMillis))
+                .signWith(this.getSigningKey())
                 .compact();
     }
 
-    // JWT 토큰에서 클레임 추출 메서드
-    public static Claims getClaimsFromToken(String token) {
-        return Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token)
-                .getBody();
+    // 응답 헤더에서 액세스 토큰을 반환하는 메서드
+    public String getTokenFromHeader(String authorizationHeader) {
+        return authorizationHeader.substring(7);
     }
 
-    // JWT 토큰에서 provider 추출
-    public static String getProviderFromToken(String token) {
-        Claims claims = getClaimsFromToken(token);
-        return claims.get("provider", String.class);
+    // 토큰에서 유저 id를 반환하는 메서드
+    public String getUserIdFromToken(String token) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(this.getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .get("userId", String.class);
+        } catch (JwtException | IllegalArgumentException e) {
+            log.warn("유효하지 않은 토큰입니다.");
+            return null;
+        }
     }
 
-    // JWT 토큰에서 providerId 추출
-    public static String getProviderIdFromToken(String token) {
-        Claims claims = getClaimsFromToken(token);
-        return claims.get("providerId", String.class);
+    // Jwt 토큰의 유효기간을 확인하는 메서드
+    public Boolean isTokenExpired(String token) {
+        try {
+            Date expirationDate = Jwts.parserBuilder()
+                    .setSigningKey(this.getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .getExpiration();
+            return expirationDate.before(new Date());
+        } catch (JwtException | IllegalArgumentException e) {
+            log.warn("유효하지 않은 토큰입니다.");
+            return null;
+        }
     }
 }

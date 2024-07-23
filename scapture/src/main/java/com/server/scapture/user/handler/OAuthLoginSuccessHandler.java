@@ -1,7 +1,7 @@
 package com.server.scapture.user.handler;
 
 import com.server.scapture.domain.User;
-import com.server.scapture.user.JwtUtil;
+import com.server.scapture.util.jwt.JwtUtil;
 import com.server.scapture.user.dto.GoogleUserInfo;
 import com.server.scapture.user.dto.KakaoUserInfo;
 import com.server.scapture.user.dto.NaverUserInfo;

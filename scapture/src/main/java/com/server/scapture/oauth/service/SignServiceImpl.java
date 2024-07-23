@@ -4,7 +4,6 @@ import com.server.scapture.domain.Role;
 import com.server.scapture.domain.User;
 import com.server.scapture.oauth.dto.UserInfo;
 import com.server.scapture.user.repository.UserRepository;
-import com.server.scapture.util.entity.OAuthException;
 import com.server.scapture.util.response.CustomAPIResponse;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
