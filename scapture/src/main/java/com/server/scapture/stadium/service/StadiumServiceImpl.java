@@ -264,14 +264,17 @@ public class StadiumServiceImpl implements StadiumService{
         List<Schedule> scheduleList = scheduleRepository.findScheduleByFieldBetweenMonthAndDay(field, parsedDate);
         // 4. Response
         // 4-1. data
-        List<GetScheduleByFieldAndDateResponseDto> data = new ArrayList<>();
-        for (Schedule schedule : scheduleList) {
-            GetScheduleByFieldAndDateResponseDto responseDto = GetScheduleByFieldAndDateResponseDto.builder()
-                    .scheduleId(schedule.getId())
-                    .hours(schedule.convertHourAndMin())
-                    .videoCount(videoRepository.countBySchedule(schedule))
-                    .build();
-            data.add(responseDto);
+        List<GetScheduleByFieldAndDateResponseDto> data = null;
+        if (!scheduleList.isEmpty()) {
+            data = new ArrayList<>();
+            for (Schedule schedule : scheduleList) {
+                GetScheduleByFieldAndDateResponseDto responseDto = GetScheduleByFieldAndDateResponseDto.builder()
+                        .scheduleId(schedule.getId())
+                        .hours(schedule.convertHourAndMin())
+                        .videoCount(videoRepository.countBySchedule(schedule))
+                        .build();
+                data.add(responseDto);
+            }
         }
         // 4-2. responseBody
         CustomAPIResponse<List<GetScheduleByFieldAndDateResponseDto>> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "구장 운영 일정 조회 완료되었습니다.");
