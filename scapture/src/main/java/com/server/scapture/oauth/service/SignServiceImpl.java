@@ -73,12 +73,12 @@ public class SignServiceImpl implements SignService {
             }
         } catch (Exception e) {
             logger.error("Error getting access token", e);
-            CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(401,"유효하지 않은 접근 토큰입니다.");
+            CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(401,"접근 토큰을 받는데 실패했습니다.");
             return ResponseEntity.status(401).body(res);
         }
 
         //성공 200 : 엑세스 토큰을 성공적으로 받은 경우
-        CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, accessToken, "엑세스 토큰을 성공적으로 받았습니다.");
+        CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, accessToken, "접근 토큰을 성공적으로 받았습니다.");
         return ResponseEntity.status(200).body(res);
     }
 
@@ -103,7 +103,7 @@ public class SignServiceImpl implements SignService {
             logger.info("Response Code: {}", responseCode);
 
             if (responseCode == 401) { // Unauthorized - token expired or invalid
-                CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(401,"유효하지 않은 접근 토큰입니다.");
+                CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(401,"토큰이 만료되었거나 유효하지 않은 토큰입니다.");
                 return ResponseEntity.status(401).body(res);
             }
 
