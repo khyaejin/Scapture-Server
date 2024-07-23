@@ -4,6 +4,7 @@ import com.server.scapture.domain.Role;
 import com.server.scapture.domain.User;
 import com.server.scapture.oauth.dto.UserInfo;
 import com.server.scapture.user.repository.UserRepository;
+import com.server.scapture.oauth.jwt.JwtUtil;
 import com.server.scapture.util.response.CustomAPIResponse;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
@@ -23,6 +24,7 @@ public class SignServiceImpl implements SignService {
 
     private static final Logger logger = LoggerFactory.getLogger(SignServiceImpl.class);
     private final UserRepository userRepository;
+    private final JwtUtil jwtUtil;
 
     @Override
     public ResponseEntity<CustomAPIResponse<?>> getAccessToken(String code) {
@@ -168,7 +170,9 @@ public class SignServiceImpl implements SignService {
     public ResponseEntity<CustomAPIResponse<?>> login(UserInfo userInfo) {
         Optional<User> foundUser = userRepository.findByProviderAndProviderId(userInfo.getProvider(), userInfo.getProviderId());
 
-        String token = "예시토큰";
+        // JWT 토큰 생성
+        String token = jwtUtil.createToken(userInfo.getProvider(), userInfo.getProviderId());
+
         //회원가입
         if (foundUser.isEmpty()) {
             User user = userInfo.toEntity();
