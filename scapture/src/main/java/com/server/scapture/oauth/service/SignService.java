@@ -14,4 +14,5 @@ public interface SignService {
 
     //카카오 소셜로그인 : 로그인/회원가입
     ResponseEntity<CustomAPIResponse<?>> login(UserInfo userInfo);
+
 }
