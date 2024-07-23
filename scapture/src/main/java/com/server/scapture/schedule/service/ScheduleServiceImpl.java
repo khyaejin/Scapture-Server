@@ -39,6 +39,7 @@ public class ScheduleServiceImpl implements ScheduleService{
                     .startDate(createScheduleRequestDto.convert(true))
                     .endDate(createScheduleRequestDto.convert(false))
                     .price(createScheduleRequestDto.getPrice())
+                    .isReserved(false)
                     .build();
             // 3. Schedule 저장
             scheduleRepository.save(schedule);
