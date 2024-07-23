@@ -5,10 +5,12 @@ import com.server.scapture.domain.User;
 import com.server.scapture.oauth.dto.UserInfo;
 import com.server.scapture.user.repository.UserRepository;
 import com.server.scapture.util.entity.OAuthException;
+import com.server.scapture.util.response.CustomAPIResponse;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -24,10 +26,10 @@ public class SignServiceImpl implements SignService {
     private final UserRepository userRepository;
 
     @Override
-    public String getAccessToken(String code) {
+    public ResponseEntity<CustomAPIResponse<?>> getAccessToken(String code) {
         String kakaoApiKey = "024871f91fe647ce7262bd022bd1afc2";
         String kakaoRedirectUri = "http://localhost:3000/oauth/redirected/kakao";
-        String accessToken = "";
+        String accessToken;
         String reqUrl = "https://kauth.kakao.com/oauth/token";
         String kakaoClientSecret = "8hIjcRxQfSSvvG8NV1nuksp9k2c9PEUP";
         try {
@@ -66,18 +68,22 @@ public class SignServiceImpl implements SignService {
                 if (jsonObject.has("access_token")) {
                     accessToken = jsonObject.getString("access_token");
                 } else {
-                    throw new OAuthException("No 'access_token' field in token response");
-                }
+                    CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(401,"이미 사용되었거나 유효하지 않은 인가 코드 입니다.");
+                    return ResponseEntity.status(401).body(res);                }
             }
         } catch (Exception e) {
             logger.error("Error getting access token", e);
-            throw new OAuthException("Error getting access token");
+            CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(401,"접근 토큰을 받는데 실패했습니다.");
+            return ResponseEntity.status(401).body(res);
         }
-        return accessToken;
+
+        //성공 200 : 엑세스 토큰을 성공적으로 받은 경우
+        CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, accessToken, "접근 토큰을 성공적으로 받았습니다.");
+        return ResponseEntity.status(200).body(res);
     }
 
     @Override
-    public UserInfo getUserInfo(String accessToken) {
+    public ResponseEntity<CustomAPIResponse<?>> getUserInfo(String accessToken) {
         String providerId = null;
         String provider = "kakao";
         String nickname = null;
@@ -97,7 +103,8 @@ public class SignServiceImpl implements SignService {
             logger.info("Response Code: {}", responseCode);
 
             if (responseCode == 401) { // Unauthorized - token expired or invalid
-                throw new OAuthException("Access token expired or invalid");
+                CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(401,"토큰이 만료되었거나 유효하지 않은 토큰입니다.");
+                return ResponseEntity.status(401).body(res);
             }
 
             try (BufferedReader br = new BufferedReader(new InputStreamReader(
@@ -112,7 +119,7 @@ public class SignServiceImpl implements SignService {
 
                 JSONObject jsonObject = new JSONObject(result);
 
-                if (jsonObject.has("id")) {
+                if (jsonObject.has("id")) { //providerId
                     providerId = String.valueOf(jsonObject.getLong("id"));
                 } else {
                     logger.warn("No 'id' field in response");
@@ -141,10 +148,11 @@ public class SignServiceImpl implements SignService {
 
         } catch (Exception e) {
             logger.error("Error getting user info", e);
-            throw new OAuthException("Error getting user info");
+            CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(400,"유저 정보를 가져오는데 실패했습니다.");
+            return ResponseEntity.status(400).body(res);
         }
 
-        return UserInfo.builder()
+        UserInfo userInfo = UserInfo.builder()
                 .provider(provider)
                 .providerId(providerId)
                 .name(nickname)
@@ -152,22 +160,27 @@ public class SignServiceImpl implements SignService {
                 .image(profileImageUrl)
                 .role(role)
                 .build();
+        CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, userInfo, "엑세스 토큰을 성공적으로 받았습니다.");
+        return ResponseEntity.status(200).body(res);
+
     }
 
     @Override
-    public User login(UserInfo userInfo) {
+    public ResponseEntity<CustomAPIResponse<?>> login(UserInfo userInfo) {
         Optional<User> foundUser = userRepository.findByProviderAndProviderId(userInfo.getProvider(), userInfo.getProviderId());
 
+        String token = "예시토큰";
         //회원가입
         if (foundUser.isEmpty()) {
             User user = userInfo.toEntity();
             userRepository.save(user);
             logger.info("User 회원가입 성공: {}", user.getName());
-            return user;
+            CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(201, token, "카카오톡 회원가입이 성공적으로 완료되었습니다.");
+            return ResponseEntity.status(201).body(res);
         } else { //로그인
             User user = foundUser.get();
             logger.info("User 로그인 성공: {}", user.getName());
-            return user;
-        }
+            CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, token, "카카오톡 로그인이 성공적으로 완료되었습니다.");
+            return ResponseEntity.status(200).body(res);        }
     }
 }
