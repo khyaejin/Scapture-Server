@@ -166,7 +166,7 @@ public class VideoServiceImpl implements VideoService{
         // 3-1. 중복 데이터 검사
         Optional<VideoLike> foundVideoLike = videoLikeRepository.findByVideoAndUser(video, user);
         if (foundVideoLike.isPresent()) {
-            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.CONFLICT.value(), "이미 존재하는 좋아요입니다.");
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.CONFLICT.value(), "이미 존재하는 영상 좋아요입니다.");
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
                     .body(responseBody);
@@ -217,7 +217,7 @@ public class VideoServiceImpl implements VideoService{
         // 3-1. 데이터 유무 검사
         Optional<VideoLike> foundVideoLike = videoLikeRepository.findByVideoAndUser(video, user);
         if (foundVideoLike.isEmpty()) {
-            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 좋아요입니다.");
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 영상 좋아요입니다.");
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body(responseBody);
