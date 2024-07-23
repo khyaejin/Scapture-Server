@@ -24,5 +24,6 @@ public class SecurityConfig {
                                 .requestMatchers("/**").permitAll()
                 );
         return httpSecurity.build();
+
     }
 }
