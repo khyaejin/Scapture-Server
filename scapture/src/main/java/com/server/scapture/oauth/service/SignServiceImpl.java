@@ -158,12 +158,13 @@ public class SignServiceImpl implements SignService {
     public User login(UserInfo userInfo) {
         Optional<User> foundUser = userRepository.findByProviderAndProviderId(userInfo.getProvider(), userInfo.getProviderId());
 
+        //회원가입
         if (foundUser.isEmpty()) {
             User user = userInfo.toEntity();
             userRepository.save(user);
             logger.info("User 회원가입 성공: {}", user.getName());
             return user;
-        } else {
+        } else { //로그인
             User user = foundUser.get();
             logger.info("User 로그인 성공: {}", user.getName());
             return user;
