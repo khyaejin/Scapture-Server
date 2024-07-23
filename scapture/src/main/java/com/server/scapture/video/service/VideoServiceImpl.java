@@ -20,28 +20,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class VideoServiceImpl implements VideoService{
     private final VideoRepository videoRepository;
-    private final S3Service s3Service;
-    // S3 업로드
-    @Override
-    public ResponseEntity<CustomAPIResponse<?>> upload(List<MultipartFile> multipartFiles) throws IOException {
-        List<String> imageUrlList = new ArrayList<>();
-
-        for (MultipartFile multipartFile : multipartFiles) {
-            String fileName = UUID.randomUUID() + multipartFile.getOriginalFilename();
-
-//            s3Service.upload(multipartFile, fileName);
-//            String presignedURL = s3Service.getPresignedURL(fileName);
-//            imageUrlList.add(presignedURL);
-        }
-        // data
-        // resonseBody
-        CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccess(HttpStatus.CREATED.value(), null, "비디오 업로드 성공");
-        // ResponseEntity
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(responseBody);
-    }
-
     @Override
     public ResponseEntity<CustomAPIResponse<?>> createVideo(List<VideoCreateRequestDto> videoCreateRequestDtoList) {
         for (VideoCreateRequestDto videoCreateRequestDto : videoCreateRequestDtoList) {
