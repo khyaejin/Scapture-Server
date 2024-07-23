@@ -10,6 +10,7 @@ import com.server.scapture.schedule.service.ScheduleService;
 import com.server.scapture.stadium.repository.StadiumRepository;
 import com.server.scapture.util.S3.S3Service;
 import com.server.scapture.util.response.CustomAPIResponse;
+import com.server.scapture.video.dto.GetVideosByLikeCountResponseDto;
 import com.server.scapture.video.dto.GetVideosResponseDto;
 import com.server.scapture.video.dto.VideoCreateDetailDto;
 import com.server.scapture.video.dto.VideoCreateRequestDto;
@@ -103,6 +104,34 @@ public class VideoServiceImpl implements VideoService{
         // 4-2. responseBody
         CustomAPIResponse<List<GetVideosResponseDto>> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "경기 영상 조회 완료되었습니다.");
         // 4-3. ResponseEntity
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(responseBody);
+    }
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> getVideosByLikeCount() {
+        // 1. Response
+        List<Video> videoList = videoRepository.findTop10ByOrderByLikeCountDesc();
+        // 1-1. data
+        List<GetVideosByLikeCountResponseDto> data = new ArrayList<>();
+        for (Video video : videoList) {
+            Schedule schedule = scheduleRepository.findById(video.getSchedule().getId()).get();
+            Field field = fieldRepository.findById(schedule.getField().getId()).get();
+            Stadium stadium = stadiumRepository.findById(field.getStadium().getId()).get();
+
+            GetVideosByLikeCountResponseDto responseDto = GetVideosByLikeCountResponseDto.builder()
+                    .videoId(video.getId())
+                    .name(video.getName())
+                    .image(video.getImage())
+                    .stadiumName(stadium.getName())
+                    .date(schedule.convertMonthAndDay())
+                    .likeCount(video.getLikeCount())
+                    .build();
+            data.add(responseDto);
+        }
+        // 1-2. responseBody
+        CustomAPIResponse<List<GetVideosByLikeCountResponseDto>> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "인기 동영상 조회 완료되었습니다.");
+        // 1-3. ResponseEntity
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(responseBody);

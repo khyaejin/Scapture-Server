@@ -13,4 +13,5 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
     @Query("SELECT COUNT(*) FROM Video v WHERE v.schedule = :schedule")
     int countBySchedule(Schedule schedule);
     List<Video> findBySchedule(Schedule schedule);
+    List<Video> findTop10ByOrderByLikeCountDesc();
 }
