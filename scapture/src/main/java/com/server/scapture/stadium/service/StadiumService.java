@@ -13,6 +13,6 @@ public interface StadiumService {
     ResponseEntity<CustomAPIResponse<?>> createStadium(CreateStadiumRequestDto data, List<MultipartFile> images) throws IOException;
     ResponseEntity<CustomAPIResponse<?>> getStadiumByCityAndState(String city, String state);
     ResponseEntity<CustomAPIResponse<?>> getStadiumByKeyword(String keyword);
-
     ResponseEntity<CustomAPIResponse<?>> getStadiumDetail(Long stadiumId);
+    ResponseEntity<CustomAPIResponse<?>> getScheduleByFieldAndDate(Long fieldId, int month, int day);
 }

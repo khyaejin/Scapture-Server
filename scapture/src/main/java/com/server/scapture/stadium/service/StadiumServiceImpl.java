@@ -160,7 +160,7 @@ public class StadiumServiceImpl implements StadiumService{
                 .status(HttpStatus.OK)
                 .body(responseBody);
     }
-    // Stadium - 경기자 세부 조회
+    // Stadium - 경기장 세부 조회
     @Override
     public ResponseEntity<CustomAPIResponse<?>> getStadiumDetail(Long stadiumId) {
         // 1. Stadium 조회
@@ -227,6 +227,11 @@ public class StadiumServiceImpl implements StadiumService{
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(responseBody);
+    }
+    // Stadium - 구장 운영 시간 조회
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> getScheduleByFieldAndDate(Long fieldId, int month, int day) {
+        return null;
     }
 
 }

@@ -32,4 +32,8 @@ public class StadiumController {
     ResponseEntity<CustomAPIResponse<?>> getStadiumDetail(@PathVariable("stadiumId") Long stadiumId) {
         return stadiumService.getStadiumDetail(stadiumId);
     }
+    @GetMapping("/{fieldId}")
+    ResponseEntity<CustomAPIResponse<?>> getScheduleByFieldAndDate(@PathVariable("fieldId") Long fieldId, @RequestParam("month") int month, @RequestParam("day") int day) {
+        return null;
+    }
 }
