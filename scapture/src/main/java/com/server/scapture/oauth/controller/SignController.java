@@ -33,14 +33,14 @@ public class SignController {
         String accessToken = signService.getAccessToken(code);
 
             //테스트 용도
-            logger.info("Access Token: {}", accessToken);
+            logger.info("Access_Token: {}", accessToken);
 
         // 3. 사용자 정보 받기
         UserInfo userInfo = signService.getUserInfo(accessToken);
 
             //log를 통한 테스트 용도
             logger.info("User_Email: {}", userInfo.getEmail());
-            logger.info("User_Nname: {}", userInfo.getName());
+            logger.info("User_Name: {}", userInfo.getName());
             logger.info("User_ProviderId: {}", userInfo.getProviderId());
             logger.info("User_Image: {}", userInfo.getImage());
 
