@@ -1,24 +1,29 @@
 package com.server.scapture.oauth.service;
 
+import com.server.scapture.domain.Role;
+import com.server.scapture.domain.User;
 import com.server.scapture.oauth.dto.UserInfo;
+import com.server.scapture.user.repository.UserRepository;
+import com.server.scapture.util.response.CustomAPIResponse;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.User;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class SignServiceImpl implements SignService {
 
     private static final Logger logger = LoggerFactory.getLogger(SignServiceImpl.class);
+    private final UserRepository userRepository;
 
     @Override
     public String getAccessToken(String code) {
@@ -87,10 +92,12 @@ public class SignServiceImpl implements SignService {
 
     @Override
     public UserInfo getUserInfo(String accessToken) {
-        long id = 0;
+        String providerId = null;
+        String provider = "kakao";
         String nickname = null;
         String email = null;
         String profileImageUrl = null;
+        Role role = Role.BASIC;
 
         String reqUrl = "https://kapi.kakao.com/v2/user/me";
         try {
@@ -118,7 +125,7 @@ public class SignServiceImpl implements SignService {
 
                 // ID 가져오기
                 if (jsonObject.has("id")) {
-                    id = jsonObject.getLong("id");
+                    providerId = String.valueOf(jsonObject.getLong("id"));
                 } else {
                     logger.warn("No 'id' field in response");
                 }
@@ -160,10 +167,36 @@ public class SignServiceImpl implements SignService {
         }
 
         return UserInfo.builder()
-                .id(id)
-                .nickname(nickname)
+                .providerId(providerId)
+                .name(nickname)
                 .email(email)
-                .profileImage(profileImageUrl)
+                .image(profileImageUrl)
+                .role(role)
                 .build();
+    }
+
+    //카카오 소셜로그인 : 로그인/회원가입
+    @Override
+    public ResponseEntity<CustomAPIResponse<Object>> login(UserInfo userInfo) {
+        // 해당 provider, providerId를 가진 회원이 존재하는가 판별
+        String provider = userInfo.getProvider();
+        String providerId = userInfo.getProviderId();
+
+        Optional<User> foundUser = userRepository.findByProviderAndProviderId(provider, providerId);
+
+        // 회원가입 : 해당 회원이 존재하지 않을 시
+        if (foundUser.isEmpty()) {
+            User user = userInfo.toEntity();
+            userRepository.save(user);
+        }
+
+        // 로그인 : 해당 회원이 존재할 시
+        UserLoginResponseDto data = UserLoginResponseDto.builder()
+                .user_id(user.getId())
+                .build();
+        CustomAPIResponse<UserLoginResponseDto> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "로그인 성공 하였습니다.");
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(responseBody);
     }
 }

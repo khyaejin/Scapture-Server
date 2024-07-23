@@ -24,6 +24,8 @@ public class SignController {
     //카카오 소셜 로그인
     @PostMapping(value = "/social/kakao")
     public ResponseEntity<CustomAPIResponse<?>> kakaoLogin(@RequestParam String code) {
+        // if문? 1번 실패 시 2~5번 진행 안 되도록 하는 로직 필요?
+
         // 1. 인가 코드 받기 (@RequestParam String code)
 
         // 2. 접근 토큰 받기
@@ -36,13 +38,13 @@ public class SignController {
         UserInfo userInfo = signService.getUserInfo(accessToken);
 
             //log를 통한 테스트 용도
-
             logger.info("User_Email: {}", userInfo.getEmail());
-            logger.info("User_Nickname: {}", userInfo.getNickname());
-            logger.info("User_Id: {}", userInfo.getId());
-            logger.info("User_ProfileImage: {}", userInfo.getProfileImage());
+            logger.info("User_Nname: {}", userInfo.getName());
+            logger.info("User_ProviderId: {}", userInfo.getProviderId());
+            logger.info("User_Image: {}", userInfo.getImage());
 
-        // 4. 로그인
+        // 4. 로그인/회원가입
+        signService.login(userInfo);
 
         // 5. jwt 토큰 발급
 
