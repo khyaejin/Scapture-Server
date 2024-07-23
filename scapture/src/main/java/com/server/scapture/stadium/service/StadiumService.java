@@ -14,5 +14,5 @@ public interface StadiumService {
     ResponseEntity<CustomAPIResponse<?>> getStadiumByCityAndState(String city, String state);
     ResponseEntity<CustomAPIResponse<?>> getStadiumByKeyword(String keyword);
     ResponseEntity<CustomAPIResponse<?>> getStadiumDetail(Long stadiumId);
-    ResponseEntity<CustomAPIResponse<?>> getScheduleByFieldAndDate(Long fieldId, int month, int day);
+    ResponseEntity<CustomAPIResponse<?>> getScheduleByFieldAndDate(Long fieldId, String date);
 }

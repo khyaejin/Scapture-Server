@@ -21,6 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -232,23 +234,36 @@ public class StadiumServiceImpl implements StadiumService{
     }
     // Stadium - 구장 운영 시간 조회
     @Override
-    public ResponseEntity<CustomAPIResponse<?>> getScheduleByFieldAndDate(Long fieldId, int month, int day) {
-        // 1. Field 조회
+    public ResponseEntity<CustomAPIResponse<?>> getScheduleByFieldAndDate(Long fieldId, String date) {
+        // 1. 영상 저장 기한(1주일) 이내의 요청인지 확인
+        // 1-1. 요청 값 LocalDate로 변환
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate parsedDate = LocalDate.parse(date, formatter);
+        // 1-2. 기한(1주일) 내 날짜 확인
+        LocalDate startDate =  LocalDate.now().minusDays(8);
+        LocalDate endDate = LocalDate.now().plusDays(1);
+        // 1-3. 검증 실패(1주일 전이 아닌 다른 요청 날짜)
+        if (!(parsedDate.isAfter(startDate) && parsedDate.isBefore(endDate))) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.FORBIDDEN.value(), "허용되지 않는 날짜입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(responseBody);
+        }
+        // 2. Field 조회
         Optional<Field> foundField = fieldRepository.findById(fieldId);
-        // 1-1. 실패
+        // 2-1. 실패
         if (foundField.isEmpty()) {
             CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 구장입니다.");
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body(responseBody);
         }
-        // 1-2. 성공
+        // 2-2. 성공
         Field field = foundField.get();
-        // 2. Schedule 조회
-        List<Schedule> scheduleList = scheduleRepository.findScheduleByFieldBetweenMonthAndDay(field, month, day);
-        System.out.println(scheduleList.size());
-        // 3. Response
-        // 3-1. data
+        // 3. Schedule 조회
+        List<Schedule> scheduleList = scheduleRepository.findScheduleByFieldBetweenMonthAndDay(field, parsedDate);
+        // 4. Response
+        // 4-1. data
         List<GetScheduleByFieldAndDateResponseDto> data = new ArrayList<>();
         for (Schedule schedule : scheduleList) {
             GetScheduleByFieldAndDateResponseDto responseDto = GetScheduleByFieldAndDateResponseDto.builder()
@@ -258,9 +273,9 @@ public class StadiumServiceImpl implements StadiumService{
                     .build();
             data.add(responseDto);
         }
-        // 3-2. responseBody
+        // 4-2. responseBody
         CustomAPIResponse<List<GetScheduleByFieldAndDateResponseDto>> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "구장 운영 일정 조회 완료되었습니다.");
-        // 3-3. ResponseEntity
+        // 4-3. ResponseEntity
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(responseBody);

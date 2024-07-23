@@ -33,7 +33,7 @@ public class StadiumController {
         return stadiumService.getStadiumDetail(stadiumId);
     }
     @GetMapping("/{fieldId}")
-    ResponseEntity<CustomAPIResponse<?>> getScheduleByFieldAndDate(@PathVariable("fieldId") Long fieldId, @RequestParam("month") int month, @RequestParam("day") int day) {
-        return stadiumService.getScheduleByFieldAndDate(fieldId, month, day);
+    ResponseEntity<CustomAPIResponse<?>> getScheduleByFieldAndDate(@PathVariable("fieldId") Long fieldId, @RequestParam("date") String date) {
+        return stadiumService.getScheduleByFieldAndDate(fieldId, date);
     }
 }
