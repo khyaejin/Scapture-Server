@@ -20,9 +20,8 @@ public class VideoController {
     public ResponseEntity<CustomAPIResponse<?>> createVideo(@RequestBody VideoCreateRequestDto videoCreateRequestDto) {
         return videoService.createVideo(videoCreateRequestDto);
     }
-
     @GetMapping("/{scheduleId}")
     public ResponseEntity<CustomAPIResponse<?>> getVideos(@PathVariable("scheduleId") Long scheduleId) {
-        return null;
+        return videoService.getVideos(scheduleId);
     }
 }
