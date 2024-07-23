@@ -26,6 +26,6 @@ public class VideoController {
     }
     @GetMapping("/popular")
     public ResponseEntity<CustomAPIResponse<?>> getVideosByLikesCount() {
-        return null;
+        return videoService.getVideosByLikeCount();
     }
 }
