@@ -1,4 +1,4 @@
-package com.server.scapture.oauth.jwt;
+package com.server.scapture.util.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -15,11 +15,13 @@ import java.util.Date;
 @Slf4j
 @Component
 public class JwtUtil {
-    @Value("${jwt.secret}")
-    private String secretKey;
+
+//    @Value("${jwt.secret}")
+    private String secretKey = "z4FmaD1QnM2Fp1XnT6D2O2h1Q2D3P4R5S6T7U8V9W0X1Y2Z3a4b5c6d7e8f9g0h1";
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(this.secretKey);
+        // Base64 URL Decoding을 사용하여 키를 디코딩합니다.
+        byte[] keyBytes = Decoders.BASE64URL.decode(this.secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
@@ -88,7 +90,4 @@ public class JwtUtil {
         return null;
     }
 
-    public String generateAccessToken(Long id, long accessTokenExpirationTime) {
-        return "";
-    }
 }
