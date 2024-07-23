@@ -17,7 +17,7 @@ import java.util.List;
 public class VideoController {
     private final VideoService videoService;
     @PostMapping
-    public ResponseEntity<CustomAPIResponse<?>> createVideo(@RequestBody List<VideoCreateRequestDto> videoCreateRequestDtoList) {
-        return videoService.createVideo(videoCreateRequestDtoList);
+    public ResponseEntity<CustomAPIResponse<?>> createVideo(@RequestBody VideoCreateRequestDto videoCreateRequestDto) {
+        return videoService.createVideo(videoCreateRequestDto);
     }
 }

@@ -5,13 +5,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-
-@Getter
-@Setter
+@Getter @Setter
 @AllArgsConstructor
 @Builder
-public class VideoCreateRequestDto {
-    private Long scheduleId;
-    private List<VideoCreateDetailDto> data;
+public class VideoCreateDetailDto {
+    private String name;
+    private String image;
+    private String video;
 }

@@ -9,5 +9,5 @@ import java.io.IOException;
 import java.util.List;
 
 public interface VideoService {
-    ResponseEntity<CustomAPIResponse<?>> createVideo(List<VideoCreateRequestDto> videoCreateRequestDtoList);
+    ResponseEntity<CustomAPIResponse<?>> createVideo(VideoCreateRequestDto videoCreateRequestDto);
 }
