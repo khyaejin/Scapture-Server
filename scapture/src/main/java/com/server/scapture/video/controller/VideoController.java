@@ -24,4 +24,8 @@ public class VideoController {
     public ResponseEntity<CustomAPIResponse<?>> getVideos(@PathVariable("scheduleId") Long scheduleId) {
         return videoService.getVideos(scheduleId);
     }
+    @GetMapping("/popular")
+    public ResponseEntity<CustomAPIResponse<?>> getVideosByLikesCount() {
+        return null;
+    }
 }
