@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class VideoCreateRequestDto {
-//    private Long scheduleId;
+    private Long scheduleId;
     private String name;
     private String image;
     private String video;
