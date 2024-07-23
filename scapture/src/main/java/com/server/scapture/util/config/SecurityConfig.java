@@ -23,7 +23,6 @@ public class SecurityConfig {
                         authorize
                                 .requestMatchers("/**").permitAll()
                 );
-
         return httpSecurity.build();
     }
 }
