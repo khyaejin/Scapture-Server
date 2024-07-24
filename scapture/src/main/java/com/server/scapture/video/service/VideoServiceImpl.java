@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -153,8 +154,8 @@ public class VideoServiceImpl implements VideoService{
                     .status(HttpStatus.OK)
                     .body(responseBody);
         }
-        // 3. Response
-        List<GetStoredVideoResponseDto> data = new ArrayList<>();
+        // 3. Video 조회
+        List<Video> videoList = new ArrayList<>();
         for (Store store : storeList) {
             Optional<Video> foundVideo = videoRepository.findById(store.getVideo().getId());
             // 3-1. video 조회 실패
@@ -164,15 +165,38 @@ public class VideoServiceImpl implements VideoService{
                         .status(HttpStatus.NOT_FOUND)
                         .body(responseBody);
             }
-            Video video = foundVideo.get();
-            // 3-2. data
+            // 3-2. 성공
+            videoList.add(foundVideo.get());
+        }
+        // 4. 정렬
+        if (sort.equals("latest")) {
+            videoList.sort(new Comparator<Video>() {
+                @Override
+                public int compare(Video o1, Video o2) {
+                    Schedule schedule1 = scheduleRepository.findById(o1.getSchedule().getId()).get();
+                    Schedule schedule2 = scheduleRepository.findById(o2.getSchedule().getId()).get();
+                    return schedule2.getEndDate().compareTo(schedule1.getEndDate());
+                }
+            });
+        } else {
+            videoList.sort(new Comparator<Video>() {
+                @Override
+                public int compare(Video o1, Video o2) {
+                    return o2.getLikeCount() - o1.getLikeCount();
+                }
+            });
+        }
+        // 5. Response
+        // 5-1. data
+        List<GetStoredVideoResponseDto> data = new ArrayList<>();
+        for (Video video : videoList) {
             GetStoredVideoResponseDto responseDto = GetStoredVideoResponseDto.builder()
                     .videoId(video.getId())
                     .image(video.getImage())
                     .build();
             data.add(responseDto);
         }
-        // 3-3 responseBody
+        // 5-2. responseBody
         CustomAPIResponse<List<GetStoredVideoResponseDto>> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "저장 영상 조회 완료되었습니다.");
         return ResponseEntity
                 .status(HttpStatus.OK)
