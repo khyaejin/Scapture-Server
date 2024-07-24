@@ -1,8 +1,6 @@
 package com.server.scapture.oauth.jwt;
 
-import com.nimbusds.jose.util.JSONObjectUtils;
 import com.server.scapture.domain.User;
-import com.server.scapture.oauth.controller.SignController;
 import com.server.scapture.user.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -11,15 +9,9 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
-import net.minidev.json.JSONUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
@@ -36,7 +28,7 @@ public class JwtUtil {
     private UserRepository userRepository;
 
     private SecretKey getSigningKey() {
-        log.info("secretKey : {}",secretKey);
+        log.info("secretKey : {}", secretKey);
 
         // Base64 디코딩을 사용하여 키를 디코딩
         byte[] keyBytes = Decoders.BASE64.decode(this.secretKey); // BASE64URL이 아닌 BASE64로 변경
@@ -112,13 +104,13 @@ public class JwtUtil {
         String token = getTokenFromHeader(authorizationHeader);
         if (token == null) {
             log.warn("헤더에 JWT 토큰이 없음");
-            return null;
+            return Optional.empty();
         }
 
         Claims claims = getClaimsFromToken(token);
         if (claims == null) {
             log.warn("유효하지 않은 JWT 토큰");
-            return null;
+            return Optional.empty();
         }
 
         String provider = getProviderFromToken(token);
@@ -126,13 +118,13 @@ public class JwtUtil {
 
         if (provider == null || providerId == null) {
             log.warn("Provider 또는 providerId 가 JWT에 들어있지 않습니다.");
-            return null;
+            return Optional.empty();
         }
 
-        Optional<User> foundUser =userRepository.findByProviderAndProviderId(provider, providerId);
+        Optional<User> foundUser = userRepository.findByProviderAndProviderId(provider, providerId);
         if (foundUser.isEmpty()) {
             log.warn("해당 provider, providerId를 가진 회원이 존재하지 않습니다.");
-            return null;
+            return Optional.empty();
         }
 
         return foundUser;
