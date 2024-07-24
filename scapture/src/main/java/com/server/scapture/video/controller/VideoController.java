@@ -7,6 +7,7 @@ import com.server.scapture.video.service.VideoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -41,5 +42,10 @@ public class VideoController {
     @DeleteMapping("/{videoId}/likes")
     public ResponseEntity<CustomAPIResponse<?>> deleteLike(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("videoId") Long videoId) {
         return videoService.deleteLike(header, videoId);
+    }
+
+    @PostMapping("/{videoId}/store")
+    public ResponseEntity<CustomAPIResponse<?>> createStore(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("videoId") Long videoId) {
+        return null;
     }
 }

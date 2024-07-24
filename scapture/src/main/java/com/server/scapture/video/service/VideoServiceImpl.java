@@ -188,7 +188,6 @@ public class VideoServiceImpl implements VideoService{
                 .status(HttpStatus.CREATED)
                 .body(responseBody);
     }
-
     @Override
     public ResponseEntity<CustomAPIResponse<?>> deleteLike(String header, Long videoId) {
         // 1. User 조회
@@ -235,5 +234,9 @@ public class VideoServiceImpl implements VideoService{
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
                 .body(responseBody);
+    }
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> createStore(String header, Long videoId) {
+        return null;
     }
 }
