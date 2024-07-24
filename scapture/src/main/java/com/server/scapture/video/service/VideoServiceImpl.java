@@ -284,4 +284,8 @@ public class VideoServiceImpl implements VideoService{
                 .status(HttpStatus.CREATED)
                 .body(responseBody);
     }
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> deleteStore(String header, Long videoId) {
+        return null;
+    }
 }

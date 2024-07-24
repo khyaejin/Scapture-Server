@@ -43,9 +43,13 @@ public class VideoController {
     public ResponseEntity<CustomAPIResponse<?>> deleteLike(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("videoId") Long videoId) {
         return videoService.deleteLike(header, videoId);
     }
-
     @PostMapping("/{videoId}/store")
     public ResponseEntity<CustomAPIResponse<?>> createStore(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("videoId") Long videoId) {
         return videoService.createStore(header, videoId);
+    }
+
+    @DeleteMapping("/{videoId}/store")
+    public ResponseEntity<CustomAPIResponse<?>> deleteStore(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("videoId") Long videoId) {
+        return null;
     }
 }
