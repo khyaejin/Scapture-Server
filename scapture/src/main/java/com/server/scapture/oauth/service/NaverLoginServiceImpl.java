@@ -1,5 +1,6 @@
 package com.server.scapture.oauth.service;
 
+import com.server.scapture.domain.Role;
 import com.server.scapture.oauth.dto.UserInfo;
 import com.server.scapture.user.repository.UserRepository;
 import com.server.scapture.oauth.jwt.JwtUtil;
@@ -85,7 +86,76 @@ public class NaverLoginServiceImpl implements NaverLoginService {
 
     @Override
     public ResponseEntity<CustomAPIResponse<?>> getUserInfo(String accessToken) {
-        return null;
+        String providerId = null;
+        String provider = "naver";
+        String nickname = null;
+        String email = null;
+        String profileImageUrl = null;
+        Role role = Role.BASIC;
+
+        String reqUrl = "https://openapi.naver.com/v1/nid/me";
+        try {
+            URL url = new URL(reqUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Authorization", "Bearer " + accessToken);
+            conn.setRequestProperty("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+
+            int responseCode = conn.getResponseCode(); // API 호출
+            logger.info("Response_Code: {}", responseCode);
+
+            if (responseCode == 401) { // Unauthorized - token expired or invalid
+                CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(401,"토큰이 만료되었거나 유효하지 않은 토큰입니다.");
+                return ResponseEntity.status(401).body(res);
+            }
+
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(
+                    responseCode >= 200 && responseCode <= 300 ? conn.getInputStream() : conn.getErrorStream()))) {
+                String line;
+                StringBuilder responseSb = new StringBuilder();
+                while ((line = br.readLine()) != null) {
+                    responseSb.append(line);
+                }
+                String result = responseSb.toString();
+                logger.info("User Info Response Body: {}", result);
+
+                JSONObject jsonObject = new JSONObject(result);
+
+                if (jsonObject.has("response")) {
+                    JSONObject response = jsonObject.getJSONObject("response");
+
+                    if (response.has("id")) { //providerId
+                        providerId = response.getString("id");
+                    } else {
+                        logger.warn("No 'id' field in response");
+                    }
+
+                    nickname = response.optString("nickname", null);
+                    email = response.optString("email", null);
+                    profileImageUrl = response.optString("profile_image", null);
+                } else {
+                    logger.warn("No 'response' field in response");
+                }
+            }
+
+
+        } catch (Exception e) {
+            logger.error("Error getting user info", e);
+            CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(400,"유저 정보를 가져오는데 실패했습니다.");
+            return ResponseEntity.status(400).body(res);
+        }
+
+        UserInfo userInfo = UserInfo.builder()
+                .provider(provider)
+                .providerId(providerId)
+                .name(nickname)
+                .email(email)
+                .image(profileImageUrl)
+                .role(role)
+                .build();
+        CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, userInfo, "엑세스 토큰을 성공적으로 받았습니다.");
+        return ResponseEntity.status(200).body(res);
+
     }
 
     @Override
