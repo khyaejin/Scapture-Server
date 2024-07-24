@@ -20,19 +20,21 @@ import java.util.List;
 public class VideoController {
     private final VideoService videoService;
     @PostMapping
-
     public ResponseEntity<CustomAPIResponse<?>> createVideo(@RequestBody VideoCreateRequestDto videoCreateRequestDto) {
         return videoService.createVideo(videoCreateRequestDto);
     }
-
     @GetMapping("/{scheduleId}")
     public ResponseEntity<CustomAPIResponse<?>> getVideos(@PathVariable("scheduleId") Long scheduleId) {
         return videoService.getVideos(scheduleId);
     }
-
     @GetMapping("/popular")
     public ResponseEntity<CustomAPIResponse<?>> getVideosByLikesCount() {
         return videoService.getVideosByLikeCount();
+    }
+
+    @GetMapping("/store")
+    public ResponseEntity<CustomAPIResponse<?>> getStoredVideo(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @RequestParam("sort") String sort) {
+        return null;
     }
 
     @PostMapping("/{videoId}/likes")
@@ -47,7 +49,6 @@ public class VideoController {
     public ResponseEntity<CustomAPIResponse<?>> createStore(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("videoId") Long videoId) {
         return videoService.createStore(header, videoId);
     }
-
     @DeleteMapping("/{videoId}/store")
     public ResponseEntity<CustomAPIResponse<?>> deleteStore(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("videoId") Long videoId) {
         return videoService.deleteStore(header, videoId);
