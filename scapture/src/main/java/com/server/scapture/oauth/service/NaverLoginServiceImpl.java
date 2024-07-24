@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -21,23 +20,19 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class SignServiceImpl implements SignService {
+public class NaverLoginServiceImpl implements SocialLoginService {
 
-    private static final Logger logger = LoggerFactory.getLogger(SignServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(NaverLoginServiceImpl.class);
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
-    @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
-    private String kakaoApiKey;
-    @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
-    private String kakaoRedirectUri;
-    @Value("${spring.security.oauth2.client.provider.kakao.token-uri}")
-    private String reqUrl;
-    @Value("${spring.security.oauth2.client.registration.kakao.client-secret}")
-    private String kakaoClientSecret;
     @Override
     public ResponseEntity<CustomAPIResponse<?>> getAccessToken(String code) {
+        String naverApiKey = "Cj4QZ3AxTAmvLcDZYMUD"; //ClientId
+        String naverRedirectUri = "http://localhost:3000/oauth/redirected/naver"; //등록한 콜백 url
         String accessToken;
+        String reqUrl = "https://nid.naver.com/oauth2.0/token";
+        String naverClientSecret = "E8Y0ugkSFA";
         try {
             URL url = new URL(reqUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -47,14 +42,14 @@ public class SignServiceImpl implements SignService {
 
             StringBuilder sb = new StringBuilder();
             sb.append("grant_type=authorization_code");
-            sb.append("&client_id=").append(kakaoApiKey);
-            sb.append("&client_secret=").append(kakaoClientSecret);
-            sb.append("&redirect_uri=").append(kakaoRedirectUri);
+            sb.append("&client_id=").append(naverApiKey);
+            sb.append("&client_secret=").append(naverClientSecret);
+            sb.append("&redirect_uri=").append(naverRedirectUri);
             sb.append("&code=").append(code);
 
             try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream()))) {
                 bw.write(sb.toString());
-                bw.flush();
+                bw.flush(); //보내기
             }
 
             int responseCode = conn.getResponseCode();
@@ -91,13 +86,13 @@ public class SignServiceImpl implements SignService {
     @Override
     public ResponseEntity<CustomAPIResponse<?>> getUserInfo(String accessToken) {
         String providerId = null;
-        String provider = "kakao";
+        String provider = "naver";
         String nickname = null;
         String email = null;
         String profileImageUrl = null;
         Role role = Role.BASIC;
 
-        String reqUrl = "https://kapi.kakao.com/v2/user/me";
+        String reqUrl = "https://openapi.naver.com/v1/nid/me";
         try {
             URL url = new URL(reqUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -125,30 +120,20 @@ public class SignServiceImpl implements SignService {
 
                 JSONObject jsonObject = new JSONObject(result);
 
-                if (jsonObject.has("id")) { //providerId
-                    providerId = String.valueOf(jsonObject.getLong("id"));
-                } else {
-                    logger.warn("No 'id' field in response");
-                }
+                if (jsonObject.has("response")) {
+                    JSONObject response = jsonObject.getJSONObject("response");
 
-                if (jsonObject.has("properties")) {
-                    nickname = jsonObject.getJSONObject("properties").optString("nickname", null);
-                } else {
-                    logger.warn("No 'properties' field in response");
-                }
-
-                if (jsonObject.has("kakao_account")) {
-                    JSONObject kakaoAccount = jsonObject.getJSONObject("kakao_account");
-                    email = kakaoAccount.optString("email", null);
-
-                    if (kakaoAccount.has("profile")) {
-                        JSONObject profile = kakaoAccount.getJSONObject("profile");
-                        profileImageUrl = profile.optString("profile_image_url", null);
+                    if (response.has("id")) { //providerId
+                        providerId = response.getString("id");
                     } else {
-                        logger.warn("No 'profile' field in 'kakao_account'");
+                        logger.warn("No 'id' field in response");
                     }
+
+                    nickname = response.optString("nickname", null);
+                    email = response.optString("email", null);
+                    profileImageUrl = response.optString("profile_image", null);
                 } else {
-                    logger.warn("No 'kakao_account' field in response");
+                    logger.warn("No 'response' field in response");
                 }
             }
 
@@ -183,12 +168,12 @@ public class SignServiceImpl implements SignService {
             User user = userInfo.toEntity();
             userRepository.save(user);
             logger.info("User 회원가입 성공: {}", user.getName());
-            CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(201, token, "카카오톡 회원가입이 성공적으로 완료되었습니다.");
+            CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(201, token, "네이버 회원가입이 성공적으로 완료되었습니다.");
             return ResponseEntity.status(201).body(res);
         } else { //로그인
             User user = foundUser.get();
             logger.info("User 로그인 성공: {}", user.getName());
-            CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, token, "카카오톡 로그인이 성공적으로 완료되었습니다.");
+            CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, token, "네이버 로그인이 성공적으로 완료되었습니다.");
             return ResponseEntity.status(200).body(res);        }
     }
 }
