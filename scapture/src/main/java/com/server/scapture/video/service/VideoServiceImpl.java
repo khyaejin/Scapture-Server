@@ -6,6 +6,7 @@ import com.server.scapture.oauth.jwt.JwtUtil;
 import com.server.scapture.schedule.repository.ScheduleRepository;
 import com.server.scapture.schedule.service.ScheduleService;
 import com.server.scapture.stadium.repository.StadiumRepository;
+import com.server.scapture.store.repository.StoreRepository;
 import com.server.scapture.util.S3.S3Service;
 import com.server.scapture.util.response.CustomAPIResponse;
 import com.server.scapture.video.dto.GetVideosByLikeCountResponseDto;
@@ -21,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +37,7 @@ public class VideoServiceImpl implements VideoService{
     private final FieldRepository fieldRepository;
     private final StadiumRepository stadiumRepository;
     private final VideoLikeRepository videoLikeRepository;
+    private final StoreRepository storeRepository;
     private final JwtUtil jwtUtil;
     @Override
     public ResponseEntity<CustomAPIResponse<?>> createVideo(VideoCreateRequestDto videoCreateRequestDto) {
@@ -237,6 +240,48 @@ public class VideoServiceImpl implements VideoService{
     }
     @Override
     public ResponseEntity<CustomAPIResponse<?>> createStore(String header, Long videoId) {
-        return null;
+        // 1. 사용자 조회
+        Optional<User> foundUser = jwtUtil.findUserByJwtToken(header);
+        // 1-1. 실패
+        if (foundUser.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 사용자입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(responseBody);
+        }
+        // 1-2. 성공
+        User user = foundUser.get();
+        // 2. 영상 조회
+        Optional<Video> foundVideo = videoRepository.findById(videoId);
+        // 2-1. 실패
+        if (foundVideo.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 영상입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(responseBody);
+        }
+        // 2-2. 성공
+        Video video = foundVideo.get();
+        // 3. Store 객체 생성
+        // 3-1. 중복 검사
+        Optional<Store> foundStore = storeRepository.findByVideoAndUser(video, user);
+        if (foundStore.isPresent()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.CONFLICT.value(), "존재하는 저장입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(responseBody);
+        }
+        // 3-2. Store 객체 생성
+        Store store = Store.builder()
+                .user(user)
+                .video(video)
+                .build();
+        // 3-3. 저장
+        storeRepository.save(store);
+        // 4. response
+        CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.CREATED.value(), "영상 저장 완료되었습니다.");
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(responseBody);
     }
 }
