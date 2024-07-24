@@ -4,30 +4,21 @@ import com.server.scapture.domain.*;
 import com.server.scapture.field.repository.FieldRepository;
 import com.server.scapture.oauth.jwt.JwtUtil;
 import com.server.scapture.schedule.repository.ScheduleRepository;
-import com.server.scapture.schedule.service.ScheduleService;
 import com.server.scapture.stadium.repository.StadiumRepository;
 import com.server.scapture.store.repository.StoreRepository;
-import com.server.scapture.util.S3.S3Service;
 import com.server.scapture.util.response.CustomAPIResponse;
-import com.server.scapture.video.dto.GetVideosByLikeCountResponseDto;
-import com.server.scapture.video.dto.GetVideosResponseDto;
-import com.server.scapture.video.dto.VideoCreateDetailDto;
-import com.server.scapture.video.dto.VideoCreateRequestDto;
+import com.server.scapture.video.dto.*;
 import com.server.scapture.video.repository.VideoRepository;
 import com.server.scapture.videoLike.repository.VideoLikeRepository;
-import io.jsonwebtoken.Jwt;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.awt.*;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -137,6 +128,76 @@ public class VideoServiceImpl implements VideoService{
         // 1-2. responseBody
         CustomAPIResponse<List<GetVideosByLikeCountResponseDto>> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "인기 동영상 조회 완료되었습니다.");
         // 1-3. ResponseEntity
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(responseBody);
+    }
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> getStoredVideo(String header, String sort) {
+        // 1. 사용자 조회
+        Optional<User> foundUser = jwtUtil.findUserByJwtToken(header);
+        // 1-1. 실패
+        if (foundUser.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 사용자입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(responseBody);
+        }
+        // 1-2. 성공
+        User user = foundUser.get();
+        // 2. 저장한 영상 가져오기
+        List<Store> storeList = storeRepository.findByUser(user);
+        // 2-1. 없는 경우
+        if (storeList.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.OK.value(), "저장 영상 조회 완료되었습니다.");
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(responseBody);
+        }
+        // 3. Video 조회
+        List<Video> videoList = new ArrayList<>();
+        for (Store store : storeList) {
+            Optional<Video> foundVideo = videoRepository.findById(store.getVideo().getId());
+            // 3-1. video 조회 실패
+            if (foundVideo.isEmpty()) {
+                CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 영상입니다.");
+                return ResponseEntity
+                        .status(HttpStatus.NOT_FOUND)
+                        .body(responseBody);
+            }
+            // 3-2. 성공
+            videoList.add(foundVideo.get());
+        }
+        // 4. 정렬
+        if (sort.equals("latest")) {
+            videoList.sort(new Comparator<Video>() {
+                @Override
+                public int compare(Video o1, Video o2) {
+                    Schedule schedule1 = scheduleRepository.findById(o1.getSchedule().getId()).get();
+                    Schedule schedule2 = scheduleRepository.findById(o2.getSchedule().getId()).get();
+                    return schedule2.getEndDate().compareTo(schedule1.getEndDate());
+                }
+            });
+        } else {
+            videoList.sort(new Comparator<Video>() {
+                @Override
+                public int compare(Video o1, Video o2) {
+                    return o2.getLikeCount() - o1.getLikeCount();
+                }
+            });
+        }
+        // 5. Response
+        // 5-1. data
+        List<GetStoredVideoResponseDto> data = new ArrayList<>();
+        for (Video video : videoList) {
+            GetStoredVideoResponseDto responseDto = GetStoredVideoResponseDto.builder()
+                    .videoId(video.getId())
+                    .image(video.getImage())
+                    .build();
+            data.add(responseDto);
+        }
+        // 5-2. responseBody
+        CustomAPIResponse<List<GetStoredVideoResponseDto>> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "저장 영상 조회 완료되었습니다.");
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(responseBody);
