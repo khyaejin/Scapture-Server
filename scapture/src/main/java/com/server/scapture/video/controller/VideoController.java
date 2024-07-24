@@ -34,9 +34,8 @@ public class VideoController {
 
     @GetMapping("/store")
     public ResponseEntity<CustomAPIResponse<?>> getStoredVideo(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @RequestParam("sort") String sort) {
-        return null;
+        return videoService.getStoredVideo(header, sort);
     }
-
     @PostMapping("/{videoId}/likes")
     public ResponseEntity<CustomAPIResponse<?>> createLike(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("videoId") Long videoId) {
         return videoService.createLike(header, videoId);
