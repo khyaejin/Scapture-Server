@@ -21,7 +21,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class KakaoLoginServiceImpl implements SocialLoginService {
+public class KakaoLoginServiceImpl implements KakaoLoginService {
 
     private static final Logger logger = LoggerFactory.getLogger(KakaoLoginServiceImpl.class);
     private final UserRepository userRepository;
@@ -36,7 +36,7 @@ public class KakaoLoginServiceImpl implements SocialLoginService {
     @Value("${spring.security.oauth2.client.registration.kakao.client-secret}")
     private String kakaoClientSecret;
     @Override
-    public ResponseEntity<CustomAPIResponse<?>> getAccessToken(String code) {
+    public ResponseEntity<CustomAPIResponse<?>> getAccessToken(String code, String state) {
         String accessToken;
         try {
             URL url = new URL(reqUrl);
@@ -105,7 +105,7 @@ public class KakaoLoginServiceImpl implements SocialLoginService {
             conn.setRequestProperty("Authorization", "Bearer " + accessToken);
             conn.setRequestProperty("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
 
-            int responseCode = conn.getResponseCode();
+            int responseCode = conn.getResponseCode(); // API 호출
             logger.info("Response Code: {}", responseCode);
 
             if (responseCode == 401) { // Unauthorized - token expired or invalid

@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 
 public interface SocialLoginService {
     //접근 토큰 받기
-    ResponseEntity<CustomAPIResponse<?>> getAccessToken(String code);
+    ResponseEntity<CustomAPIResponse<?>> getAccessToken(String code, String state);
 
     //사용자 정보 받기
     ResponseEntity<CustomAPIResponse<?>> getUserInfo(String accessToken);
