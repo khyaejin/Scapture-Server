@@ -262,7 +262,7 @@ public class VideoServiceImpl implements VideoService{
         }
         // 2-2. 성공
         Video video = foundVideo.get();
-        // 3. Store 객체 생성
+        // 3. Store 생성
         // 3-1. 중복 검사
         Optional<Store> foundStore = storeRepository.findByVideoAndUser(video, user);
         if (foundStore.isPresent()) {
@@ -271,7 +271,7 @@ public class VideoServiceImpl implements VideoService{
                     .status(HttpStatus.CONFLICT)
                     .body(responseBody);
         }
-        // 3-2. Store 객체 생성
+        // 3-2. Store 생성
         Store store = Store.builder()
                 .user(user)
                 .video(video)
@@ -286,6 +286,45 @@ public class VideoServiceImpl implements VideoService{
     }
     @Override
     public ResponseEntity<CustomAPIResponse<?>> deleteStore(String header, Long videoId) {
-        return null;
+        // 1. 사용자 조회
+        Optional<User> foundUser = jwtUtil.findUserByJwtToken(header);
+        // 1-1. 실패
+        if (foundUser.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 사용자입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(responseBody);
+        }
+        // 1-2. 성공
+        User user = foundUser.get();
+        // 2. 영상 조회
+        Optional<Video> foundVideo = videoRepository.findById(videoId);
+        // 2-1. 실패
+        if (foundVideo.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 영상입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(responseBody);
+        }
+        // 2-2. 성공
+        Video video = foundVideo.get();
+        // 3. Store 객체 생성
+        // 3-1. 중복 검사
+        Optional<Store> foundStore = storeRepository.findByVideoAndUser(video, user);
+        if (foundStore.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 저장입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(responseBody);
+        }
+        // 3-2. Store 가져오기
+        Store store = foundStore.get();
+        // 3-3. Store 삭제
+        storeRepository.delete(store);
+        // 4. Response
+        CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.NO_CONTENT.value(), "저장 삭제 완료되었습니다.");
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .body(responseBody);
     }
 }

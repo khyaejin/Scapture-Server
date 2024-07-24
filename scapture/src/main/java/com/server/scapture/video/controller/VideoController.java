@@ -50,6 +50,6 @@ public class VideoController {
 
     @DeleteMapping("/{videoId}/store")
     public ResponseEntity<CustomAPIResponse<?>> deleteStore(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("videoId") Long videoId) {
-        return null;
+        return videoService.deleteStore(header, videoId);
     }
 }
