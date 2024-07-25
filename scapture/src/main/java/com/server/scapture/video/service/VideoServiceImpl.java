@@ -1,6 +1,7 @@
 package com.server.scapture.video.service;
 
 import com.server.scapture.domain.*;
+import com.server.scapture.download.repository.DownloadRepository;
 import com.server.scapture.field.repository.FieldRepository;
 import com.server.scapture.oauth.jwt.JwtUtil;
 import com.server.scapture.schedule.repository.ScheduleRepository;
@@ -29,6 +30,7 @@ public class VideoServiceImpl implements VideoService{
     private final StadiumRepository stadiumRepository;
     private final VideoLikeRepository videoLikeRepository;
     private final StoreRepository storeRepository;
+    private final DownloadRepository downloadRepository;
     private final JwtUtil jwtUtil;
     @Override
     public ResponseEntity<CustomAPIResponse<?>> createVideo(VideoCreateRequestDto videoCreateRequestDto) {
@@ -434,6 +436,51 @@ public class VideoServiceImpl implements VideoService{
         CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.NO_CONTENT.value(), "저장 삭제 완료되었습니다.");
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
+                .body(responseBody);
+    }
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> createDownload(String header, Long videoId) {
+        // 1. 영상 조회
+        Optional<Video> foundVideo = videoRepository.findById(videoId);
+        // 1-1. 실패
+        if (foundVideo.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 영상입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(responseBody);
+        }
+        // 1-2. 성공
+        Video video = foundVideo.get();
+        // 1. 사용자 조회
+        Optional<User> foundUser = jwtUtil.findUserByJwtToken(header);
+        // 1-1. 실패
+        if (foundUser.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 사용자입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(responseBody);
+        }
+        // 1-2. 성공
+        User user = foundUser.get();
+        // 3. Download 생성
+        // 3-1. 중복 검사
+        Optional<Download> foundDownload = downloadRepository.findByVideoAndUser(video, user);
+        if (foundDownload.isPresent()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.CONFLICT.value(), "이미 존재하는 권한입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(responseBody);
+        }
+        // 3-2. Download 저장
+        Download download = Download.builder()
+                .video(video)
+                .user(user)
+                .build();
+        downloadRepository.save(download);
+        // 4. Response
+        CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.CREATED.value(), "영상 다운로드 권한 부여 완료되었습니다.");
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
                 .body(responseBody);
     }
 }
