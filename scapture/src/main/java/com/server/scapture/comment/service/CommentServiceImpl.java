@@ -102,10 +102,59 @@ public class CommentServiceImpl implements CommentService{
                 .build();
         // 3-3. 저장
         commentLikeRepository.save(commentLike);
-        // 4. Response
+        // 4. 댓글 좋아요 수 증가
+        comment.increaseLikeCount();
+        commentRepository.save(comment);
+        // 5. Response
         CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.CREATED.value(), "댓글 좋아요 추가 완료되었습니다.");
         return ResponseEntity
                 .status(HttpStatus.CREATED)
+                .body(responseBody);
+    }
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> deleteCommentLike(String header, Long commentId) {
+        // 1. 사용자 조회
+        Optional<User> foundUser = jwtUtil.findUserByJwtToken(header);
+        // 1-1. 실패
+        if (foundUser.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 사용자입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(responseBody);
+        }
+        // 1-2. 성공
+        User user = foundUser.get();
+        // 2. 댓글 조회
+        Optional<Comment> foundComment = commentRepository.findById(commentId);
+        // 2-1. 실패
+        if (foundComment.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 댓글입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(responseBody);
+        }
+        // 2-2. 성공
+        Comment comment = foundComment.get();
+        // 3. 댓글 좋아요 조회
+        Optional<CommentLike> foundCommentLike = commentLikeRepository.findByCommentAndUser(comment, user);
+        // 3-1. 조회 실패
+        if (foundCommentLike.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 댓글 좋아요입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(responseBody);
+        }
+        // 3-2. 성공
+        CommentLike commentLike = foundCommentLike.get();
+        // 4. 삭제
+        commentLikeRepository.delete(commentLike);
+        // 5. 댓글 좋아요 수 감소
+        comment.decreaseLikeCount();
+        commentRepository.save(comment);
+        // 5. Response
+        CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.NO_CONTENT.value(), "댓글 삭제 완료되었습니다.");
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
                 .body(responseBody);
     }
 }
