@@ -36,8 +36,8 @@ public class VideoController {
         return videoService.getStoredVideo(header, sort);
     }
     @GetMapping("/{videoId}/detail")
-    public ResponseEntity<CustomAPIResponse<?>> getVideoDetail(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @RequestParam("videoId") Long videoId) {
-        return videoService.getVideoDetail(videoId);
+    public ResponseEntity<CustomAPIResponse<?>> getVideoDetail(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("videoId") Long videoId) {
+        return videoService.getVideoDetail(header, videoId);
     }
     @PostMapping("/{videoId}/likes")
     public ResponseEntity<CustomAPIResponse<?>> createLike(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("videoId") Long videoId) {
