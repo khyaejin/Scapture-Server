@@ -5,7 +5,6 @@ import com.server.scapture.util.response.CustomAPIResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,13 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("api/user")
 public class UserController {
 
-    private UserService userService;
+    private final UserService userService;
 
     // 버내너 잔액 조회
-    @GetMapping("/banana")
+    @GetMapping("/bananas")
     public ResponseEntity<CustomAPIResponse<?>> searchBananas(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
         return userService.getBananaBalance(authorizationHeader);
-
     }
 }
