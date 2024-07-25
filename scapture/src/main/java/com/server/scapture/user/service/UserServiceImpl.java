@@ -28,7 +28,7 @@ public class UserServiceImpl implements UserService{
 
         // 토큰에 해당하는 회원이 없을 시
         if (foundUser.isEmpty()) {
-            CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(401, "유효하지 않은 토큰이거나, 토큰으로 유저 정보를 조회하는데 실패하였습니다.");
+            CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(401, "유효하지 않은 토큰이거나, 해당 ID에 해당하는 회원이 없습니다.");
             return ResponseEntity.status(401).body(res);
         }
         User user = foundUser.get();
