@@ -22,7 +22,6 @@ import java.util.Optional;
 public class JwtUtil {
 
     @Value("${jwt.secret}")private String secretKey;
-
     @Autowired
     private UserRepository userRepository;
 

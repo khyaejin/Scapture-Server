@@ -5,10 +5,7 @@ import com.server.scapture.util.response.CustomAPIResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,5 +19,12 @@ public class UserController {
     public ResponseEntity<CustomAPIResponse<?>> searchBananas(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
         return userService.getBananaBalance(authorizationHeader);
+    }
+
+    // 버내너 충전
+    @PostMapping("/bananas")
+    public ResponseEntity<CustomAPIResponse<?>> addBananas(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader, @RequestBody int balance) {
+        return userService.addBananas(authorizationHeader, balance);
     }
 }
