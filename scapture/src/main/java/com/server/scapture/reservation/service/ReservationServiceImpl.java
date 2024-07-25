@@ -126,7 +126,14 @@ public class ReservationServiceImpl implements ReservationService{
             }
             index++;
         }
-        // 4. 시간순 정렬
+        // 4. data 0
+        if (sortedList.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.OK.value(), "예약 조회 완료되었습니다.");
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(responseBody);
+        }
+        // 5. 시간순 정렬
         sortedList.sort(new Comparator<SortReservationDto>() {
             @Override
             public int compare(SortReservationDto o1, SortReservationDto o2) {
@@ -134,14 +141,14 @@ public class ReservationServiceImpl implements ReservationService{
                 return o1.getStartDate().compareTo(o2.getStartDate());
             }
         });
-        // 5. 같은 시간끼리 리스트 만들기
-        // 5-1. data
+        // 6. 같은 시간끼리 리스트 만들기
+        // 6-1. data
         List<List<GetReservationResponseDto>> data = new ArrayList<>();
-        // 5-2. 같은 시간 리스트업
+        // 6-2. 같은 시간 리스트업
         List<GetReservationResponseDto> responseDtoList = new ArrayList<>();
         LocalDateTime targetTime = sortedList.get(0).getStartDate();
         for (SortReservationDto sortReservationDto : sortedList) {
-            // 5-2-1. responseDto
+            // 6-2-1. responseDto
             GetReservationResponseDto responseDto = GetReservationResponseDto.builder()
                     .scheduleId(sortReservationDto.getScheduleId())
                     .name(sortReservationDto.getName())
@@ -151,7 +158,7 @@ public class ReservationServiceImpl implements ReservationService{
                     .isReserved(sortReservationDto.isReserved())
                     .price(sortReservationDto.getPrice())
                     .build();
-            // 5-2-1. 같은 시간 리스트업
+            // 6-2-1. 같은 시간 리스트업
             if (!targetTime.equals(sortReservationDto.getStartDate())) {
                 data.add(responseDtoList);
                 responseDtoList = new ArrayList<>();
@@ -159,7 +166,7 @@ public class ReservationServiceImpl implements ReservationService{
             }
             responseDtoList.add(responseDto);
         }
-        // 6. Response
+        // 7. Response
         CustomAPIResponse<List<List<GetReservationResponseDto>>> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "예약 조회 완료되었습니다.");
         return ResponseEntity
                 .status(HttpStatus.OK)
