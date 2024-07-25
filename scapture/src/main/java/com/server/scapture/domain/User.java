@@ -24,4 +24,9 @@ public class User {
     private String email;       // 이메일
     @Enumerated(EnumType.STRING)
     private Role role;           // 권한
+
+    // 버내너 추가
+    public void increaseTotalBananas(int balance) {
+        this.banana += balance;
+    }
 }

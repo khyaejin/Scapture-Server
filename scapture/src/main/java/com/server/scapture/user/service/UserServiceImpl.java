@@ -4,6 +4,7 @@ import com.server.scapture.domain.Subscribe;
 import com.server.scapture.domain.User;
 import com.server.scapture.oauth.jwt.JwtUtil;
 import com.server.scapture.subscribe.repository.SubscribeRepository;
+import com.server.scapture.user.dto.BananaAddResponseDto;
 import com.server.scapture.user.dto.BananaBalanceResponseDto;
 import com.server.scapture.user.repository.UserRepository;
 import com.server.scapture.util.response.CustomAPIResponse;
@@ -77,10 +78,15 @@ public class UserServiceImpl implements UserService{
             return ResponseEntity.status(404).body(res);
         }
 
+        // 충전 성공 (200)
+        user.increaseTotalBananas(balance);
+        userRepository.save(user);
 
+        BananaAddResponseDto bananaAddResponseDto= BananaAddResponseDto.builder()
+                .balance(balance)
+                .build();
 
-
-
-        return null;
+        CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, bananaAddResponseDto, "버내너가 성공적으로 충전되었습니다.");
+        return ResponseEntity.status(200).body(res);
     }
 }
