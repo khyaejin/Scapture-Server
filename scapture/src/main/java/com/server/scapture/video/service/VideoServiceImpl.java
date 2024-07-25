@@ -204,7 +204,7 @@ public class VideoServiceImpl implements VideoService{
     }
 
     @Override
-    public ResponseEntity<CustomAPIResponse<?>> getVideoDetail(Long videoId) {
+    public ResponseEntity<CustomAPIResponse<?>> getVideoDetail(String header, Long videoId) {
         return null;
     }
 
