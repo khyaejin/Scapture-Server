@@ -108,4 +108,8 @@ public class CommentServiceImpl implements CommentService{
                 .status(HttpStatus.CREATED)
                 .body(responseBody);
     }
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> deleteCommentLike(String header, Long commentId) {
+        return null;
+    }
 }
