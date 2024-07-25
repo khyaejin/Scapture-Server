@@ -4,5 +4,5 @@ import com.server.scapture.util.response.CustomAPIResponse;
 import org.springframework.http.ResponseEntity;
 
 public interface ReservationService {
-    ResponseEntity<CustomAPIResponse<?>> createReservation(Long scheduleId);
+    ResponseEntity<CustomAPIResponse<?>> createReservation(String header, Long scheduleId);
 }

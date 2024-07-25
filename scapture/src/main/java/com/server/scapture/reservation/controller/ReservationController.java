@@ -3,11 +3,9 @@ package com.server.scapture.reservation.controller;
 import com.server.scapture.reservation.service.ReservationService;
 import com.server.scapture.util.response.CustomAPIResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -15,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReservationController {
     private final ReservationService reservationService;
     @PostMapping("/{scheduleId}")
-    public ResponseEntity<CustomAPIResponse<?>> createReservation(@PathVariable("scheduleId") Long scheduleId) {
-        return null;
+    public ResponseEntity<CustomAPIResponse<?>> createReservation(@RequestHeader(HttpHeaders.AUTHORIZATION) String header,  @PathVariable("scheduleId") Long scheduleId) {
+        return reservationService.createReservation(header, scheduleId);
     }
 }
