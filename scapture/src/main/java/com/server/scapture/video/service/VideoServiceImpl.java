@@ -203,6 +203,54 @@ public class VideoServiceImpl implements VideoService{
                 .body(responseBody);
     }
     @Override
+    public ResponseEntity<CustomAPIResponse<?>> getVideoDetail(String header, Long videoId) {
+        // 1. video 조회
+        Optional<Video> foundVideo = videoRepository.findById(videoId);
+        // 1-1. 실패
+        if (foundVideo.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 영상입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(responseBody);
+        }
+        // 1-2. 성공
+        Video video = foundVideo.get();
+        // 2. User 조회
+        Optional<User> foundUser = jwtUtil.findUserByJwtToken(header);
+        // 2-1. 실패
+        if (foundUser.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 사용자입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(responseBody);
+        }
+        // 2-2. 성공
+        User user = foundUser.get();
+        // 3. Stadium 조회
+        Schedule schedule = scheduleRepository.findById(video.getSchedule().getId()).get();
+        Field field = fieldRepository.findById(schedule.getField().getId()).get();
+        Stadium stadium = stadiumRepository.findById(field.getStadium().getId()).get();
+        // 4. 좋아요 여부 조회
+        boolean isLiked = videoLikeRepository.findByVideoAndUser(video, user).isPresent();
+        // 5. 저장 여부 조회
+        boolean isStored = storeRepository.findByVideoAndUser(video, user).isPresent();
+        // 6. Response
+        // 6-1. data
+        GetVideoDetailResponseDto data = GetVideoDetailResponseDto.builder()
+                .name(video.getName())
+                .image(video.getImage())
+                .video(video.getVideo())
+                .stadiumName(stadium.getName())
+                .isLiked(isLiked)
+                .isStored(isStored)
+                .build();
+        // 6-2. responseBody
+        CustomAPIResponse<GetVideoDetailResponseDto> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "영상 세부 조회 완료되었습니다.");
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(responseBody);
+    }
+    @Override
     public ResponseEntity<CustomAPIResponse<?>> createLike(String header, Long videoId) {
         // 1. User 조회
         Optional<User> foundUser = jwtUtil.findUserByJwtToken(header);
