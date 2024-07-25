@@ -21,9 +21,8 @@ public class CommentController {
     public ResponseEntity<CustomAPIResponse<?>> createCommentLike(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("commentId") Long commentId) {
         return commentService.createCommentLike(header, commentId);
     }
-
     @DeleteMapping("/{commentId}/likes")
     public ResponseEntity<CustomAPIResponse<?>> deleteCommentLike(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("commentId") Long commentId) {
-        return null;
+        return commentService.deleteCommentLike(header, commentId);
     }
 }
