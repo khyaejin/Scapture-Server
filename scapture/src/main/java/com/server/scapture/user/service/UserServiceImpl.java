@@ -26,10 +26,10 @@ public class UserServiceImpl implements UserService{
     public ResponseEntity<CustomAPIResponse<?>> getBananaBalance(String authorizationHeader) {
         Optional<User> foundUser = jwtUtil.findUserByJwtToken(authorizationHeader);
 
-        // 토큰에 해당하는 회원이 없을 시
+        // 회원정보 찾을 수 없음 (401)
         if (foundUser.isEmpty()) {
-            CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(401, "유효하지 않은 토큰이거나, 해당 ID에 해당하는 회원이 없습니다.");
-            return ResponseEntity.status(401).body(res);
+            CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(404, "유효하지 않은 토큰이거나, 해당 ID에 해당하는 회원이 없습니다.");
+            return ResponseEntity.status(404).body(res);
         }
         User user = foundUser.get();
 
@@ -54,5 +54,33 @@ public class UserServiceImpl implements UserService{
         // 조회 성공, 구독중 O (200)
         CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, bananaBalanceResponseDto, "버내너 잔액 조회 완료되었습니다. 해당 회원은 구독중입니다.");
         return ResponseEntity.status(200).body(res);
+    }
+
+
+    // 버내너 충전
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> addBananas(String authorizationHeader, int balance) {
+        Optional<User> foundUser = jwtUtil.findUserByJwtToken(authorizationHeader);
+
+        // 회원정보 찾을 수 없음 (404)
+        if (foundUser.isEmpty()) {
+            CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(404, "유효하지 않은 토큰이거나, 해당 ID에 해당하는 회원이 없습니다.");
+            return ResponseEntity.status(401).body(res);
+        }
+        User user = foundUser.get();
+
+        Optional<Subscribe> foundSubscribe = subscribeRepository.findByUserId(user.getId());
+
+        // 구독중인 회원인 경우 (401)
+        if (foundUser.isPresent()) {
+            CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(401, "구독중인 회원입니다.");
+            return ResponseEntity.status(404).body(res);
+        }
+
+
+
+
+
+        return null;
     }
 }
