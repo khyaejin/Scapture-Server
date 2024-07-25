@@ -1,6 +1,8 @@
 package com.server.scapture.oauth.controller;
 
+import com.server.scapture.domain.User;
 import com.server.scapture.oauth.dto.UserInfo;
+import com.server.scapture.oauth.jwt.JwtUtil;
 import com.server.scapture.oauth.service.GoogleLoginService;
 import com.server.scapture.oauth.service.KakaoLoginService;
 import com.server.scapture.oauth.service.NaverLoginService;
@@ -8,12 +10,13 @@ import com.server.scapture.util.response.CustomAPIResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
+
 @RestController
 @RequestMapping("api/oauth")
 @RequiredArgsConstructor
@@ -23,7 +26,7 @@ public class SignController {
     private final NaverLoginService naverLoginService;
     private final KakaoLoginService kakaoLoginService;
     private final GoogleLoginService googleLoginService;
-
+    private final JwtUtil jwtUtil;
     //카카오 소셜 로그인
     @PostMapping(value = "/social/kakao")
     public ResponseEntity<CustomAPIResponse<?>> kakaoLogin(@RequestParam String code) {
@@ -137,5 +140,21 @@ public class SignController {
             return ResponseEntity.status(loginResponse.getStatusCode()).body(loginResponse.getBody());
         }
         return ResponseEntity.status(loginResponse.getStatusCode()).body(loginResponse.getBody());
+    }
+
+
+    @GetMapping(value = "/social/test/find/user")
+    public Optional<User> testGetUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+        return jwtUtil.findUserByJwtToken(authorizationHeader);
+    }
+
+    @GetMapping(value = "/social/test/find/user/fail")
+    public User testGetUserFail(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
+        Optional<User> foundUser =  jwtUtil.findUserByJwtToken(authorizationHeader);
+        if (foundUser.isEmpty()) {
+            // 적절한 예외처리
+        }
+        User user = foundUser.get();
+        return user;
     }
 }

@@ -30,8 +30,7 @@ public class JwtUtil {
     private SecretKey getSigningKey() {
         log.info("secretKey : {}", secretKey);
 
-        // Base64 디코딩을 사용하여 키를 디코딩
-        byte[] keyBytes = Decoders.BASE64.decode(this.secretKey); // BASE64URL이 아닌 BASE64로 변경
+        byte[] keyBytes = Decoders.BASE64.decode(this.secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
