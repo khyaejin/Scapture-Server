@@ -17,4 +17,8 @@ public class CommentController {
     public ResponseEntity<CustomAPIResponse<?>> createComment(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @RequestBody CreateCommentRequestDto createCommentRequestDto) {
         return commentService.createComment(header, createCommentRequestDto);
     }
+    @PostMapping("/{commentId}/likes")
+    public ResponseEntity<CustomAPIResponse<?>> createCommentLike(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("commentId") Long commentId) {
+        return commentService.createCommentLike(header, commentId);
+    }
 }

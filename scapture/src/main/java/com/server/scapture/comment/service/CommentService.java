@@ -6,4 +6,5 @@ import org.springframework.http.ResponseEntity;
 
 public interface CommentService {
     ResponseEntity<CustomAPIResponse<?>> createComment(String header, CreateCommentRequestDto createCommentRequestDto);
+    ResponseEntity<CustomAPIResponse<?>> createCommentLike(String header, Long commentId);
 }
