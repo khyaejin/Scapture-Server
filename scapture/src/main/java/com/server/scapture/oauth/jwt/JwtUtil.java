@@ -21,11 +21,41 @@ import java.util.Optional;
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret}")
-    private String secretKey;
+    @Value("${jwt.secret}")private String secretKey;
 
     @Autowired
     private UserRepository userRepository;
+
+    // 토큰으로 유저 찾기
+    public Optional<User> findUserByJwtToken(String authorizationHeader) {
+        String token = getTokenFromHeader(authorizationHeader);
+        if (token == null) {
+            log.warn("헤더에 JWT 토큰이 없음");
+            return Optional.empty();
+        }
+
+        Claims claims = getClaimsFromToken(token);
+        if (claims == null) {
+            log.warn("유효하지 않은 JWT 토큰");
+            return Optional.empty();
+        }
+
+        String provider = getProviderFromToken(token);
+        String providerId = getProviderIdFromToken(token);
+
+        if (provider == null || providerId == null) {
+            log.warn("Provider 또는 providerId 가 JWT에 들어있지 않습니다.");
+            return Optional.empty();
+        }
+
+        Optional<User> foundUser = userRepository.findByProviderAndProviderId(provider, providerId);
+        if (foundUser.isEmpty()) {
+            log.warn("해당 provider, providerId를 가진 회원이 존재하지 않습니다.");
+            return Optional.empty();
+        }
+
+        return foundUser;
+    }
 
     private SecretKey getSigningKey() {
         log.info("secretKey : {}", secretKey);
@@ -97,35 +127,5 @@ public class JwtUtil {
             return expirationDate.before(new Date());
         }
         return null;
-    }
-
-    public Optional<User> findUserByJwtToken(String authorizationHeader) {
-        String token = getTokenFromHeader(authorizationHeader);
-        if (token == null) {
-            log.warn("헤더에 JWT 토큰이 없음");
-            return Optional.empty();
-        }
-
-        Claims claims = getClaimsFromToken(token);
-        if (claims == null) {
-            log.warn("유효하지 않은 JWT 토큰");
-            return Optional.empty();
-        }
-
-        String provider = getProviderFromToken(token);
-        String providerId = getProviderIdFromToken(token);
-
-        if (provider == null || providerId == null) {
-            log.warn("Provider 또는 providerId 가 JWT에 들어있지 않습니다.");
-            return Optional.empty();
-        }
-
-        Optional<User> foundUser = userRepository.findByProviderAndProviderId(provider, providerId);
-        if (foundUser.isEmpty()) {
-            log.warn("해당 provider, providerId를 가진 회원이 존재하지 않습니다.");
-            return Optional.empty();
-        }
-
-        return foundUser;
     }
 }
