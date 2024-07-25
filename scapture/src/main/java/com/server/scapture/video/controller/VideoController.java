@@ -71,7 +71,7 @@ public class VideoController {
 
     @GetMapping("/{videoId}/download")
     public ResponseEntity<CustomAPIResponse<?>> getDownload(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("videoId") Long videoId) {
-        return null;
+        return videoService.getDownload(header, videoId);
     }
 
 }
