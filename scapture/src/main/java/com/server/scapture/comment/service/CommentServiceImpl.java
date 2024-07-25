@@ -102,7 +102,10 @@ public class CommentServiceImpl implements CommentService{
                 .build();
         // 3-3. 저장
         commentLikeRepository.save(commentLike);
-        // 4. Response
+        // 4. 댓글 좋아요 수 증가
+        comment.increaseLikeCount();
+        commentRepository.save(comment);
+        // 5. Response
         CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.CREATED.value(), "댓글 좋아요 추가 완료되었습니다.");
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -136,7 +139,7 @@ public class CommentServiceImpl implements CommentService{
         Optional<CommentLike> foundCommentLike = commentLikeRepository.findByCommentAndUser(comment, user);
         // 3-1. 조회 실패
         if (foundCommentLike.isEmpty()) {
-            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "이미 존재하는 댓글 좋아요입니다.");
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 댓글 좋아요입니다.");
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body(responseBody);
@@ -145,6 +148,9 @@ public class CommentServiceImpl implements CommentService{
         CommentLike commentLike = foundCommentLike.get();
         // 4. 삭제
         commentLikeRepository.delete(commentLike);
+        // 5. 댓글 좋아요 수 감소
+        comment.decreaseLikeCount();
+        commentRepository.save(comment);
         // 5. Response
         CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.NO_CONTENT.value(), "댓글 삭제 완료되었습니다.");
         return ResponseEntity
