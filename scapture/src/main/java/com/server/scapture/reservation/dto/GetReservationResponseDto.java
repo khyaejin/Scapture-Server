@@ -14,6 +14,6 @@ public class GetReservationResponseDto {
     private String type;
     private String hours;
     private String date;
-    private boolean isReserved;
+    private Boolean isReserved;
     private int price;
 }
