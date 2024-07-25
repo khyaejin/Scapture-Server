@@ -8,7 +8,6 @@ import com.server.scapture.reservation.repository.ReservationRepository;
 import com.server.scapture.schedule.repository.ScheduleRepository;
 import com.server.scapture.util.response.CustomAPIResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -17,7 +16,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class ReservationServideImpl implements ReservationService{
+public class ReservationServiceImpl implements ReservationService{
     private final ReservationRepository reservationRepository;
     private final ScheduleRepository scheduleRepository;
     private final JwtUtil jwtUtil;
@@ -64,5 +63,9 @@ public class ReservationServideImpl implements ReservationService{
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(responseBody);
+    }
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> getReservation(String header, Long scheduleId, String date) {
+        return null;
     }
 }

@@ -16,4 +16,9 @@ public class ReservationController {
     public ResponseEntity<CustomAPIResponse<?>> createReservation(@RequestHeader(HttpHeaders.AUTHORIZATION) String header,  @PathVariable("scheduleId") Long scheduleId) {
         return reservationService.createReservation(header, scheduleId);
     }
+
+    @GetMapping("/{stadiumId}")
+    public ResponseEntity<CustomAPIResponse<?>> getReservation(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("stadiumId") Long stadiumId, @RequestParam("date") String date) {
+        return null;
+    }
 }
