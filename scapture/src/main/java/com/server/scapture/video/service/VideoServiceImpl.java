@@ -202,6 +202,12 @@ public class VideoServiceImpl implements VideoService{
                 .status(HttpStatus.OK)
                 .body(responseBody);
     }
+
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> getVideoDetail(Long videoId) {
+        return null;
+    }
+
     @Override
     public ResponseEntity<CustomAPIResponse<?>> createLike(String header, Long videoId) {
         // 1. User 조회

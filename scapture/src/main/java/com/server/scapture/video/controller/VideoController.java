@@ -31,10 +31,13 @@ public class VideoController {
     public ResponseEntity<CustomAPIResponse<?>> getVideosByLikesCount() {
         return videoService.getVideosByLikeCount();
     }
-
     @GetMapping("/store")
     public ResponseEntity<CustomAPIResponse<?>> getStoredVideo(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @RequestParam("sort") String sort) {
         return videoService.getStoredVideo(header, sort);
+    }
+    @GetMapping("/{videoId}/detail")
+    public ResponseEntity<CustomAPIResponse<?>> getVideoDetail(@RequestParam("videoId") Long videoId) {
+        return null;
     }
     @PostMapping("/{videoId}/likes")
     public ResponseEntity<CustomAPIResponse<?>> createLike(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("videoId") Long videoId) {
