@@ -73,7 +73,7 @@ public class UserServiceImpl implements UserService{
         Optional<Subscribe> foundSubscribe = subscribeRepository.findByUserId(user.getId());
 
         // 구독중인 회원인 경우 (401)
-        if (foundUser.isPresent()) {
+        if (foundSubscribe.isPresent()) {
             CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(401, "구독중인 회원입니다.");
             return ResponseEntity.status(404).body(res);
         }
@@ -81,9 +81,10 @@ public class UserServiceImpl implements UserService{
         // 충전 성공 (200)
         user.increaseTotalBananas(balance);
         userRepository.save(user);
+        int totalBananas = user.getBanana();
 
-        BananaAddResponseDto bananaAddResponseDto= BananaAddResponseDto.builder()
-                .balance(balance)
+        BananaAddResponseDto bananaAddResponseDto = BananaAddResponseDto.builder()
+                .balance(totalBananas)
                 .build();
 
         CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, bananaAddResponseDto, "버내너가 성공적으로 충전되었습니다.");
