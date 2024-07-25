@@ -18,4 +18,5 @@ public interface VideoService {
     ResponseEntity<CustomAPIResponse<?>> deleteLike(String header, Long videoId);
     ResponseEntity<CustomAPIResponse<?>> createStore(String header, Long videoId);
     ResponseEntity<CustomAPIResponse<?>> deleteStore(String header, Long videoId);
-}
+    ResponseEntity<CustomAPIResponse<?>> createDownload(String header, Long videoId);
+ }

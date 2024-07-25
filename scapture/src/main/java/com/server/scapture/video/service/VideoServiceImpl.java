@@ -436,4 +436,8 @@ public class VideoServiceImpl implements VideoService{
                 .status(HttpStatus.NO_CONTENT)
                 .body(responseBody);
     }
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> createDownload(String header, Long videoId) {
+        return null;
+    }
 }

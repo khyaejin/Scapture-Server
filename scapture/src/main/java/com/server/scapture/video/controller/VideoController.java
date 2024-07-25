@@ -55,4 +55,9 @@ public class VideoController {
     public ResponseEntity<CustomAPIResponse<?>> deleteStore(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("videoId") Long videoId) {
         return videoService.deleteStore(header, videoId);
     }
+
+    @PostMapping("/{videoId}/download")
+    public ResponseEntity<CustomAPIResponse<?>> createDownload(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("videoId") Long videoId) {
+        return null;
+    }
 }
