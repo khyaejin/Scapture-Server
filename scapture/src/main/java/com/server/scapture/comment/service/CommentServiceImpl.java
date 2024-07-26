@@ -64,6 +64,10 @@ public class CommentServiceImpl implements CommentService{
                 .body(responseBody);
     }
     @Override
+    public ResponseEntity<CustomAPIResponse<?>> getComment(String header, Long videoId) {
+        return null;
+    }
+    @Override
     public ResponseEntity<CustomAPIResponse<?>> createCommentLike(String header, Long commentId) {
         // 1. 사용자 조회
         Optional<User> foundUser = jwtUtil.findUserByJwtToken(header);
