@@ -4,6 +4,7 @@ import com.server.scapture.domain.Subscribe;
 import com.server.scapture.domain.User;
 import com.server.scapture.oauth.jwt.JwtUtil;
 import com.server.scapture.subscribe.repository.SubscribeRepository;
+import com.server.scapture.subscribe.service.SubscribeService;
 import com.server.scapture.user.dto.BananaAddResponseDto;
 import com.server.scapture.user.dto.BananaBalanceResponseDto;
 import com.server.scapture.user.dto.UserProfileDto;
@@ -22,6 +23,7 @@ public class UserServiceImpl implements UserService{
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
     private final SubscribeRepository subscribeRepository;
+    private final SubscribeService subscribeService;
 
     // 버내너 잔액 조회
     @Override
@@ -106,6 +108,8 @@ public class UserServiceImpl implements UserService{
 
         Optional<Subscribe> foundSubscribe = subscribeRepository.findByUserId(user.getId());
         UserProfileDto userProfileDto;
+
+        subscribeService.checkRole(); // Subscribe 정보에 따른 Usre의 Role 확인 및 갱신
 
         // 구독중 아닐 시
         if (foundSubscribe.isEmpty()) {
