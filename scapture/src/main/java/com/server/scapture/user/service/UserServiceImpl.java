@@ -256,7 +256,7 @@ public class UserServiceImpl implements UserService{
 
         for (Reservation reservation : reservations) {
             Schedule schedule = reservation.getSchedule();
-            String date = DateUtil.formatLocalDateTime(schedule.getStartDate()); // LocalDateTime -> String
+            String date = DateUtil.formatLocalDateTimeWithKoreanDay(schedule.getStartDate()); // date 형식 변환 -> 2024.07.18(목)
 
             Field field = schedule.getField();
             Stadium stadium = field.getStadium();
