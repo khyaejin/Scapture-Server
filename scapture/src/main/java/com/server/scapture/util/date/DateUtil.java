@@ -19,7 +19,7 @@ public class DateUtil {
         return dateTime.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN);
     }
 
-    // LocalDateTime을 원하는 형식의 문자열로 변환하는 메서드
+    // LocalDateTime을 yyyy.mm.dd(요일)으로 변환하는 메서드
     public static String formatLocalDateTimeWithKoreanDay(LocalDateTime dateTime) {
         DateTimeFormatter formatterWithoutDay = DateTimeFormatter.ofPattern("yyyy.MM.dd", Locale.KOREAN);
         return dateTime.format(formatterWithoutDay) + "(" + getKoreanDayOfWeek(dateTime) + ")";
