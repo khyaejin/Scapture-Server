@@ -20,8 +20,10 @@ import java.util.Optional;
 @Slf4j
 @Component
 public class JwtUtil {
+    // @Value의 값이 제대로 안 들어가는 오류가 생길 경우, 환경변수에서 jwt.secret 삭제
+    @Value("${jwt.secret}")
+    private String secretKey;
 
-    @Value("${jwt.secret}")private String secretKey;
     @Autowired
     private UserRepository userRepository;
 
@@ -86,7 +88,7 @@ public class JwtUtil {
         return null;
     }
 
-    // 토큰에서 클레임을 추출하는 메서드
+    // 토큰에서 클레임을 추출하는 메서드 -> 토큰의 유효성 검사 (만료시간, 조작여부 등)
     public Claims getClaimsFromToken(String token) {
         try {
             return Jwts.parserBuilder()
