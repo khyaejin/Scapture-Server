@@ -14,6 +14,5 @@ public class ProfileEditDto {
     private String name;
     private String team;
     private String location;
-    private String endDate;
     private String image;
 }

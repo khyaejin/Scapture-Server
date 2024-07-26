@@ -165,19 +165,28 @@ public class UserServiceImpl implements UserService{
 
         // 프로필 이미지 편집 - S3
         String imageName = String.valueOf(user.getId()); // 프로필 사진의 이름은 유저의 pk를 이용(한 유저당 하나의 프로필 사진)
-        String imageURL = s3Service.modifyUserImage(images, imageName);
+        String image = s3Service.modifyUserImage(images, imageName);
 
         String name = profileEditDto.getName();
         String team = profileEditDto.getTeam();
         String location = profileEditDto.getLocation();
 
-        user.editProfile(name, team, location, imageURL);
+        user.editProfile(name, team, location, image);
 
         userRepository.save(user);
+
         // 프로필 편집 성공 (200)
 
-        return null;
-    }
+        // 검증을 위해 save한 user를 가지고 다시 profileEditDto 생성
+        profileEditDto = ProfileEditDto.builder()
+                .name(user.getName())
+                .team(user.getTeam())
+                .location(user.getLocation())
+                .image(user.getImage())
+                .build();
+
+        CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, profileEditDto, "프로필이 성공적으로 업데이트되었습니다.");
+        return ResponseEntity.status(200).body(res);    }
 
     // 구독 생성
     @Override
