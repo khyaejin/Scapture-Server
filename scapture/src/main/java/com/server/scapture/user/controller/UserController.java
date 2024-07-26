@@ -14,6 +14,14 @@ public class UserController {
 
     private final UserService userService;
 
+
+    // 프로필 조회
+    @GetMapping("/profile")
+    public ResponseEntity<CustomAPIResponse<?>> getProfile(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
+        return userService.getProfile(authorizationHeader);
+    }
+
     // 버내너 잔액 조회
     @GetMapping("/bananas")
     public ResponseEntity<CustomAPIResponse<?>> searchBananas(
