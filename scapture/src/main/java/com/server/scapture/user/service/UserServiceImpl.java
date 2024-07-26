@@ -117,12 +117,12 @@ public class UserServiceImpl implements UserService{
         subscribeService.checkRole(); // Subscribe 정보에 따른 User의 Role 확인 및 갱신
 
         Optional<Subscribe> foundSubscribe = subscribeRepository.findByUserId(user.getId());
-        UserProfileDto userProfileDto;
+        ProfileViewDto profileViewDto;
 
 
         // 구독중 아닐 시
         if (foundSubscribe.isEmpty()) {
-            userProfileDto = UserProfileDto.builder()
+            profileViewDto = profileViewDto.builder()
                     .name(user.getName())
                     .team(user.getTeam())
                     .location(user.getLocation())
@@ -135,7 +135,7 @@ public class UserServiceImpl implements UserService{
         else{
             Subscribe subscribe = foundSubscribe.get();
 
-            userProfileDto = UserProfileDto.builder()
+            profileViewDto = profileViewDto.builder()
                     .name(user.getName())
                     .team(user.getTeam())
                     .location(user.getLocation())
@@ -146,7 +146,7 @@ public class UserServiceImpl implements UserService{
         }
 
         // 조회 성공(200)
-        CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, userProfileDto, "사용자 정보 조회 완료되었습니다.");
+        CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, profileViewDto, "사용자 정보 조회 완료되었습니다.");
         return ResponseEntity.status(200).body(res);
 
     }
