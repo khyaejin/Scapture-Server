@@ -31,19 +31,28 @@ import java.util.Optional;
 public class S3Service {
     @Value("${cloud.aws.s3.videoBucketName}")
     private String videoBucket;
-    @Value("${cloud.aws.s3.imageBucketName}")
-    private String imageBucket;
+    @Value("${cloud.aws.s3.stadiumImageBucketName}")
+    private String stadiumImageBucket;
+    @Value("${cloud.aws.s3.userImageBucketName}")
+    private String userImageBucket;
     private final AmazonS3 amazonS3;
 
-    public String upload(MultipartFile multipartFile, String dirName) throws IOException {
-        String originalFilename = dirName + "/" + multipartFile.getOriginalFilename();
+    public String upload(MultipartFile multipartFile, String dirName, String fileName) throws IOException {
+        String name = dirName + "/" + fileName;
 
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(multipartFile.getSize());
         metadata.setContentType(multipartFile.getContentType());
 
-        amazonS3.putObject(imageBucket, originalFilename, multipartFile.getInputStream(), metadata);
-        return amazonS3.getUrl(imageBucket, originalFilename).toString();
+        amazonS3.putObject(stadiumImageBucket, name, multipartFile.getInputStream(), metadata);
+        return amazonS3.getUrl(stadiumImageBucket, name).toString();
     }
+    public String modifyUserImage(MultipartFile multipartFile, String name) throws IOException {
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(multipartFile.getSize());
+        metadata.setContentType(multipartFile.getContentType());
 
+        amazonS3.putObject(userImageBucket, name, multipartFile.getInputStream(), metadata);
+        return amazonS3.getUrl(userImageBucket, name).toString();
+    }
 }
