@@ -1,24 +1,23 @@
 package com.server.scapture.user.service;
 
-import com.server.scapture.domain.Reservation;
-import com.server.scapture.domain.Subscribe;
-import com.server.scapture.domain.User;
+import com.server.scapture.domain.*;
+import com.server.scapture.field.repository.FieldRepository;
 import com.server.scapture.oauth.jwt.JwtUtil;
 import com.server.scapture.reservation.repository.ReservationRepository;
+import com.server.scapture.schedule.repository.ScheduleRepository;
 import com.server.scapture.subscribe.dto.CreateSubscribeRequestDto;
 import com.server.scapture.subscribe.repository.SubscribeRepository;
 import com.server.scapture.subscribe.service.SubscribeService;
-import com.server.scapture.user.dto.BananaAddResponseDto;
-import com.server.scapture.user.dto.BananaBalanceResponseDto;
-import com.server.scapture.user.dto.SubscribeResponseDto;
-import com.server.scapture.user.dto.UserProfileDto;
+import com.server.scapture.user.dto.*;
 import com.server.scapture.user.repository.UserRepository;
+import com.server.scapture.util.date.DateUtil;
 import com.server.scapture.util.response.CustomAPIResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,7 +30,8 @@ public class UserServiceImpl implements UserService{
     private final SubscribeRepository subscribeRepository;
     private final SubscribeService subscribeService;
     private final ReservationRepository reservationRepository;
-
+    private final ScheduleRepository scheduleRepository;
+    private final FieldRepository fieldRepository;
 
     // 버내너 잔액 조회
     @Override
@@ -243,7 +243,7 @@ public class UserServiceImpl implements UserService{
         User user = foundUser.get();
 
         // 해당 회원의 예약정보 불러오기
-        Optional<List<Reservation>> reservations = reservationRepository.findByUser(user);
+        List<Reservation> reservations = reservationRepository.findByUser(user);
 
         // 조회 성공 - 예약정보 존재하지 않는 경우 (200)
         if (reservations.isEmpty()) {
@@ -251,6 +251,26 @@ public class UserServiceImpl implements UserService{
             return ResponseEntity.status(200).body(res);
         }
 
-        return null;
+        // 조회 성공 - 예약정보 존재하는 경우 (200)
+        List<ReservationResponseDto> data = new ArrayList<>();
+
+        for (Reservation reservation : reservations) {
+            Schedule schedule = reservation.getSchedule();
+            String date = DateUtil.formatLocalDateTime(schedule.getStartDate()); // LocalDateTime -> String
+
+            Field field = schedule.getField();
+            Stadium stadium = field.getStadium();
+            String name = stadium.getName() + " " + field.getName();
+
+            ReservationResponseDto dto = ReservationResponseDto.builder()
+                    .date(date)
+                    .name(name)
+                    .hours(stadium.getHours())
+                    .build();
+            data.add(dto);
+        }
+
+        CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, data, "예약 내역 조회 완료되었습니다.");
+        return ResponseEntity.status(200).body(res);
     }
 }

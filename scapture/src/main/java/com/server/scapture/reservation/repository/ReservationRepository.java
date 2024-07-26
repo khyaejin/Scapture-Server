@@ -13,5 +13,5 @@ import java.util.Optional;
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
     Optional<Reservation> findByScheduleAndUser(Schedule schedule, User user);
 
-    Optional<List<Reservation>> findByUser(User user);
+    List<Reservation> findByUser(User user);
 }
