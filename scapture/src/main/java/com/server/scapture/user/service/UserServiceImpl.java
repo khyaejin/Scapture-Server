@@ -90,4 +90,20 @@ public class UserServiceImpl implements UserService{
         CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, bananaAddResponseDto, "버내너가 성공적으로 충전되었습니다.");
         return ResponseEntity.status(200).body(res);
     }
+
+    // 프로필 조회
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> getProfile(String authorizationHeader) {
+        Optional<User> foundUser = jwtUtil.findUserByJwtToken(authorizationHeader);
+
+        // 회원정보 찾을 수 없음 (404)
+        if (foundUser.isEmpty()) {
+            CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(404, "유효하지 않은 토큰이거나, 해당 ID에 해당하는 회원이 없습니다.");
+            return ResponseEntity.status(401).body(res);
+        }
+        User user = foundUser.get();
+
+        // 조회 성공(200)
+        return null;
+    }
 }
