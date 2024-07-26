@@ -20,7 +20,7 @@ public class CommentController {
 
     @GetMapping("/{videoId}")
     public ResponseEntity<CustomAPIResponse<?>> getComment(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("videoId") Long videoId) {
-        return null;
+        return commentService.getComment(header, videoId);
     }
     @PostMapping("/{commentId}/likes")
     public ResponseEntity<CustomAPIResponse<?>> createCommentLike(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("commentId") Long commentId) {
