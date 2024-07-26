@@ -27,4 +27,7 @@ public class Subscribe {
         return endDate.format(formatter);
     }
 
+    public void updateEndDate(LocalDateTime newEndDate) {
+        this.endDate = newEndDate;
+    }
 }

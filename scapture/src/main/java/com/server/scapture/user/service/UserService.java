@@ -14,6 +14,9 @@ public interface UserService {
     //프로필 조회
     ResponseEntity<CustomAPIResponse<?>> getProfile(String authorizationHeader);
 
-    // 구독 생성/갱신
-    ResponseEntity<CustomAPIResponse<?>> manageSubscribe(String authorizationHeader, CreateSubscribeRequestDto createSubscribeRequestDto);
+    // 구독 생성
+    ResponseEntity<CustomAPIResponse<?>> createSubscribe(String authorizationHeader, CreateSubscribeRequestDto createSubscribeRequestDto);
+
+    // 구독 갱신
+    ResponseEntity<CustomAPIResponse<?>> extensionSubscribe(String authorizationHeader);
 }
