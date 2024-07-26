@@ -3,6 +3,7 @@ package com.server.scapture.user.service;
 import com.server.scapture.domain.Subscribe;
 import com.server.scapture.domain.User;
 import com.server.scapture.oauth.jwt.JwtUtil;
+import com.server.scapture.subscribe.dto.CreateSubscribeRequestDto;
 import com.server.scapture.subscribe.repository.SubscribeRepository;
 import com.server.scapture.subscribe.service.SubscribeService;
 import com.server.scapture.user.dto.BananaAddResponseDto;
@@ -140,5 +141,11 @@ public class UserServiceImpl implements UserService{
         CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, userProfileDto, "사용자 정보 조회 완료되었습니다.");
         return ResponseEntity.status(200).body(res);
 
+    }
+
+    // 구독 생성/갱신
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> manageSubscribe(String authorizationHeader, CreateSubscribeRequestDto createSubscribeRequestDto) {
+        return null;
     }
 }

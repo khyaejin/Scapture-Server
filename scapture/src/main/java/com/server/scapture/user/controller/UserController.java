@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.server.scapture.subscribe.dto.CreateSubscribeRequestDto;
 
 @RestController
 @RequiredArgsConstructor
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private
 
 
     // 프로필 조회
@@ -34,5 +36,12 @@ public class UserController {
     public ResponseEntity<CustomAPIResponse<?>> addBananas(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader, @RequestBody int balance) {
         return userService.addBananas(authorizationHeader, balance);
+    }
+
+    // 구독 생성/갱신
+    @GetMapping("/subscription")
+    public ResponseEntity<CustomAPIResponse<?>> manageSubscription(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader, @RequestBody CreateSubscribeRequestDto createSubscribeRequestDto) {
+        return userService.manageSubscribe(authorizationHeader, createSubscribeRequestDto);
     }
 }
