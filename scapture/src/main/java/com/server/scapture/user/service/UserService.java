@@ -20,7 +20,7 @@ public interface UserService {
     ResponseEntity<CustomAPIResponse<?>> getProfile(String authorizationHeader);
 
     // 프로필 편집
-    ResponseEntity<CustomAPIResponse<?>> editProfile(String authorizationHeader, ProfileEditDto profileEditDto, MultipartFile images) throws IOException;
+    ResponseEntity<CustomAPIResponse<?>> editProfile(String authorizationHeader, ProfileEditDto profileEditDto, MultipartFile image) throws IOException;
 
     // 구독 생성
     ResponseEntity<CustomAPIResponse<?>> createSubscribe(String authorizationHeader, CreateSubscribeRequestDto createSubscribeRequestDto);

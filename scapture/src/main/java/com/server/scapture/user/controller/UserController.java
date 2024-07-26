@@ -29,10 +29,11 @@ public class UserController {
 
     // 프로필 편집
     @PutMapping("/profile")
-    public ResponseEntity<CustomAPIResponse<?>> createStadium(
+    public ResponseEntity<CustomAPIResponse<?>> editProfile(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader,
-            @RequestPart ProfileEditDto data, @RequestPart MultipartFile images) throws IOException {
-        return userService.editProfile(authorizationHeader, data, images);
+            @RequestPart("data") ProfileEditDto profileEditDto,
+            @RequestPart(value = "image", required = false) MultipartFile images) throws IOException {
+        return userService.editProfile(authorizationHeader, profileEditDto, images);
     }
 
     // 버내너 잔액 조회

@@ -30,11 +30,15 @@ public class User {
         this.banana += balance;
     }
 
-    // 프로필 편집
-    public void editProfile(String name, String team, String location, String image) {
+    // 프로필 편집 - 이미지
+    public void editProfileImage(String image) {
+        this.image = image;
+    }
+
+    // 프로필 편집 - 이미지 제외
+    public void editProfileWithoutImage(String name, String team, String location) {
         this.name = name;
         this.team = team;
         this.location = location;
-        this.image = image;
     }
 }

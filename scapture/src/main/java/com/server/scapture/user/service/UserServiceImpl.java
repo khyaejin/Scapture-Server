@@ -152,41 +152,39 @@ public class UserServiceImpl implements UserService{
     }
 
     // 프로필 수정
-    @Override
-    public ResponseEntity<CustomAPIResponse<?>> editProfile(String authorizationHeader, ProfileEditDto profileEditDto, MultipartFile images) throws IOException {
+    public ResponseEntity<CustomAPIResponse<?>> editProfile(String authorizationHeader, ProfileEditDto profileEditDto, MultipartFile image) throws IOException {
         Optional<User> foundUser = jwtUtil.findUserByJwtToken(authorizationHeader);
 
         // 회원정보 찾을 수 없음 (404)
         if (foundUser.isEmpty()) {
             CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(404, "유효하지 않은 토큰이거나, 해당 ID에 해당하는 회원이 없습니다.");
-            return ResponseEntity.status(401).body(res);
+            return ResponseEntity.status(404).body(res);
         }
         User user = foundUser.get();
 
-        // 프로필 이미지 편집 - S3
-        String imageName = String.valueOf(user.getId()); // 프로필 사진의 이름은 유저의 pk를 이용(한 유저당 하나의 프로필 사진)
-        String image = s3Service.modifyUserImage(images, imageName);
+        // 프로필 정보 업데이트
+        user.editProfileWithoutImage(profileEditDto.getName(), profileEditDto.getTeam(), profileEditDto.getLocation());
 
-        String name = profileEditDto.getName();
-        String team = profileEditDto.getTeam();
-        String location = profileEditDto.getLocation();
-
-        user.editProfile(name, team, location, image);
+        // 프로필 이미지 수정 있을 시
+        if (image != null && !image.isEmpty()) {
+            String imageName = String.valueOf(user.getId()); // 프로필 사진의 이름은 유저의 pk를 이용(한 유저당 하나의 프로필 사진)
+            String imageUrl = s3Service.modifyUserImage(image, imageName);
+            user.editProfileImage(imageUrl);
+        }
 
         userRepository.save(user);
 
-        // 프로필 편집 성공 (200)
-
-        // 검증을 위해 save한 user를 가지고 다시 profileEditDto 생성
-        profileEditDto = ProfileEditDto.builder()
+        // 프로필 편집 성공 (200) - 검증을 위해 save한 user를 가지고 다시 profileEditDto 생성
+        ProfileEditDto updatedProfileEditDto = ProfileEditDto.builder()
                 .name(user.getName())
                 .team(user.getTeam())
                 .location(user.getLocation())
                 .image(user.getImage())
                 .build();
 
-        CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, profileEditDto, "프로필이 성공적으로 업데이트되었습니다.");
-        return ResponseEntity.status(200).body(res);    }
+        CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, updatedProfileEditDto, "프로필이 성공적으로 업데이트되었습니다.");
+        return ResponseEntity.status(200).body(res);
+    }
 
     // 구독 생성
     @Override
