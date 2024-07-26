@@ -16,7 +16,7 @@ public class UserController {
 
 
     // 프로필 조회
-    @GetMapping("/progile")
+    @GetMapping("/profile")
     public ResponseEntity<CustomAPIResponse<?>> getProfile(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
         return userService.getProfile(authorizationHeader);

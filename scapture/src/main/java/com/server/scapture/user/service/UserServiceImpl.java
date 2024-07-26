@@ -6,6 +6,7 @@ import com.server.scapture.oauth.jwt.JwtUtil;
 import com.server.scapture.subscribe.repository.SubscribeRepository;
 import com.server.scapture.user.dto.BananaAddResponseDto;
 import com.server.scapture.user.dto.BananaBalanceResponseDto;
+import com.server.scapture.user.dto.UserProfileDto;
 import com.server.scapture.user.repository.UserRepository;
 import com.server.scapture.util.response.CustomAPIResponse;
 import lombok.RequiredArgsConstructor;
@@ -103,7 +104,37 @@ public class UserServiceImpl implements UserService{
         }
         User user = foundUser.get();
 
+        Optional<Subscribe> foundSubscribe = subscribeRepository.findByUserId(user.getId());
+        UserProfileDto userProfileDto;
+
+        // 구독중 아닐 시
+        if (foundSubscribe.isEmpty()) {
+            userProfileDto = UserProfileDto.builder()
+                    .name(user.getName())
+                    .team(user.getTeam())
+                    .location(user.getLocation())
+                    .role(user.getRole())
+                    .endDate(null) // 구독 만료일 null
+                    .image(user.getImage())
+                    .build();
+        }
+        // 구독중일 시
+        else{
+            Subscribe subscribe = foundSubscribe.get();
+
+            userProfileDto = UserProfileDto.builder()
+                    .name(user.getName())
+                    .team(user.getTeam())
+                    .location(user.getLocation())
+                    .role(user.getRole())
+                    .endDate(subscribe.convertEndDate()) // 구독 만료일 null
+                    .image(user.getImage())
+                    .build();
+        }
+
         // 조회 성공(200)
-        return null;
+        CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, userProfileDto, "사용자 정보 조회 완료되었습니다.");
+        return ResponseEntity.status(200).body(res);
+
     }
 }
