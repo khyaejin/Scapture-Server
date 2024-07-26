@@ -146,6 +146,22 @@ public class UserServiceImpl implements UserService{
     // 구독 생성/갱신
     @Override
     public ResponseEntity<CustomAPIResponse<?>> manageSubscribe(String authorizationHeader, CreateSubscribeRequestDto createSubscribeRequestDto) {
+        Optional<User> foundUser = jwtUtil.findUserByJwtToken(authorizationHeader);
+
+        // 회원정보 찾을 수 없음 (404)
+        if (foundUser.isEmpty()) {
+            CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(404, "유효하지 않은 토큰이거나, 해당 ID에 해당하는 회원이 없습니다.");
+            return ResponseEntity.status(401).body(res);
+        }
+        User user = foundUser.get();
+
+
+        // 구독 갱신 성공 (200) - 이미 구독중인 경우
+
+
+        // 구독 생성 성공 (201) - 구독중이 아닌 경우
+
+
         return null;
     }
 }
