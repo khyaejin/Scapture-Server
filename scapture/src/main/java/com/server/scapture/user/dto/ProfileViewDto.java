@@ -17,5 +17,4 @@ public class ProfileViewDto {
     private Role role;
     private String endDate;
     private String image;
-
 }

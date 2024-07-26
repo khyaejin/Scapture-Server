@@ -10,11 +10,13 @@ import com.server.scapture.subscribe.repository.SubscribeRepository;
 import com.server.scapture.subscribe.service.SubscribeService;
 import com.server.scapture.user.dto.*;
 import com.server.scapture.user.repository.UserRepository;
+import com.server.scapture.util.S3.S3Service;
 import com.server.scapture.util.date.DateUtil;
 import com.server.scapture.util.response.CustomAPIResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,8 +32,7 @@ public class UserServiceImpl implements UserService{
     private final SubscribeRepository subscribeRepository;
     private final SubscribeService subscribeService;
     private final ReservationRepository reservationRepository;
-    private final ScheduleRepository scheduleRepository;
-    private final FieldRepository fieldRepository;
+    private final S3Service s3Service;
 
     // 버내너 잔액 조회
     @Override
@@ -119,10 +120,9 @@ public class UserServiceImpl implements UserService{
         Optional<Subscribe> foundSubscribe = subscribeRepository.findByUserId(user.getId());
         ProfileViewDto profileViewDto;
 
-
         // 구독중 아닐 시
         if (foundSubscribe.isEmpty()) {
-            profileViewDto = profileViewDto.builder()
+            profileViewDto = ProfileViewDto.builder()
                     .name(user.getName())
                     .team(user.getTeam())
                     .location(user.getLocation())
@@ -134,8 +134,7 @@ public class UserServiceImpl implements UserService{
         // 구독중일 시
         else{
             Subscribe subscribe = foundSubscribe.get();
-
-            profileViewDto = profileViewDto.builder()
+            profileViewDto = ProfileViewDto.builder()
                     .name(user.getName())
                     .team(user.getTeam())
                     .location(user.getLocation())
@@ -149,6 +148,25 @@ public class UserServiceImpl implements UserService{
         CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, profileViewDto, "사용자 정보 조회 완료되었습니다.");
         return ResponseEntity.status(200).body(res);
 
+    }
+
+    // 프로필 수정
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> editProfile(ProfileEditDto data, List<MultipartFile> images) {
+        Optional<User> foundUser = jwtUtil.findUserByJwtToken(authorizationHeader);
+
+        // 회원정보 찾을 수 없음 (404)
+        if (foundUser.isEmpty()) {
+            CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(404, "유효하지 않은 토큰이거나, 해당 ID에 해당하는 회원이 없습니다.");
+            return ResponseEntity.status(401).body(res);
+        }
+        User user = foundUser.get();
+
+
+
+//        String name ="";
+//        s3Service.modifyUserImage(images, name);
+        return null;
     }
 
     // 구독 생성

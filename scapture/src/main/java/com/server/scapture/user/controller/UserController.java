@@ -33,6 +33,7 @@ public class UserController {
             @RequestPart ProfileEditDto data, @RequestPart List<MultipartFile> images) throws IOException {
         return userService.editProfile(data, images);
     }
+
     // 버내너 잔액 조회
     @GetMapping("/bananas")
     public ResponseEntity<CustomAPIResponse<?>> searchBananas(
