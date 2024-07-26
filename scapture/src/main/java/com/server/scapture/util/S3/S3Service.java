@@ -47,6 +47,7 @@ public class S3Service {
         amazonS3.putObject(stadiumImageBucket, name, multipartFile.getInputStream(), metadata);
         return amazonS3.getUrl(stadiumImageBucket, name).toString();
     }
+    // name: User PK
     public String modifyUserImage(MultipartFile multipartFile, String name) throws IOException {
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(multipartFile.getSize());
