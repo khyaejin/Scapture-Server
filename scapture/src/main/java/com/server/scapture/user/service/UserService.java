@@ -1,5 +1,6 @@
 package com.server.scapture.user.service;
 
+import com.server.scapture.subscribe.dto.CreateSubscribeRequestDto;
 import com.server.scapture.util.response.CustomAPIResponse;
 import org.springframework.http.ResponseEntity;
 
@@ -12,4 +13,7 @@ public interface UserService {
 
     //프로필 조회
     ResponseEntity<CustomAPIResponse<?>> getProfile(String authorizationHeader);
+
+    // 구독 생성/갱신
+    ResponseEntity<CustomAPIResponse<?>> manageSubscribe(String authorizationHeader, CreateSubscribeRequestDto createSubscribeRequestDto);
 }
