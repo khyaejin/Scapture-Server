@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -152,7 +153,7 @@ public class UserServiceImpl implements UserService{
 
     // 프로필 수정
     @Override
-    public ResponseEntity<CustomAPIResponse<?>> editProfile(ProfileEditDto data, List<MultipartFile> images) {
+    public ResponseEntity<CustomAPIResponse<?>> editProfile(String authorizationHeader, ProfileEditDto profileEditDto, MultipartFile images) throws IOException {
         Optional<User> foundUser = jwtUtil.findUserByJwtToken(authorizationHeader);
 
         // 회원정보 찾을 수 없음 (404)
@@ -162,10 +163,19 @@ public class UserServiceImpl implements UserService{
         }
         User user = foundUser.get();
 
+        // 프로필 이미지 편집 - S3
+        String imageName = String.valueOf(user.getId()); // 프로필 사진의 이름은 유저의 pk를 이용(한 유저당 하나의 프로필 사진)
+        String imageURL = s3Service.modifyUserImage(images, imageName);
 
+        String name = profileEditDto.getName();
+        String team = profileEditDto.getTeam();
+        String location = profileEditDto.getLocation();
 
-//        String name ="";
-//        s3Service.modifyUserImage(images, name);
+        user.editProfile(name, team, location, imageURL);
+
+        userRepository.save(user);
+        // 프로필 편집 성공 (200)
+
         return null;
     }
 

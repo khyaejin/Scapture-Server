@@ -30,8 +30,9 @@ public class UserController {
     // 프로필 편집
     @PutMapping("/profile")
     public ResponseEntity<CustomAPIResponse<?>> createStadium(
-            @RequestPart ProfileEditDto data, @RequestPart List<MultipartFile> images) throws IOException {
-        return userService.editProfile(data, images);
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader,
+            @RequestPart ProfileEditDto profileEditDto, @RequestPart MultipartFile images) throws IOException {
+        return userService.editProfile(authorizationHeader, profileEditDto, images);
     }
 
     // 버내너 잔액 조회

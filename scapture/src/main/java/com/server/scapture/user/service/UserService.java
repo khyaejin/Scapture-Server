@@ -6,6 +6,7 @@ import com.server.scapture.util.response.CustomAPIResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface UserService {
@@ -18,8 +19,8 @@ public interface UserService {
     //프로필 조회
     ResponseEntity<CustomAPIResponse<?>> getProfile(String authorizationHeader);
 
-    // 프로필 수정
-    ResponseEntity<CustomAPIResponse<?>> editProfile(ProfileEditDto data, List<MultipartFile> images);
+    // 프로필 편집
+    ResponseEntity<CustomAPIResponse<?>> editProfile(String authorizationHeader, ProfileEditDto profileEditDto, MultipartFile images) throws IOException;
 
     // 구독 생성
     ResponseEntity<CustomAPIResponse<?>> createSubscribe(String authorizationHeader, CreateSubscribeRequestDto createSubscribeRequestDto);

@@ -29,4 +29,12 @@ public class User {
     public void increaseTotalBananas(int balance) {
         this.banana += balance;
     }
+
+    // 프로필 편집
+    public void editProfile(String name, String team, String location, String image) {
+        this.name = name;
+        this.team = team;
+        this.location = location;
+        this.image = image;
+    }
 }
