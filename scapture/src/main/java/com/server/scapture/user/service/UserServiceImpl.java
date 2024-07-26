@@ -8,6 +8,7 @@ import com.server.scapture.subscribe.repository.SubscribeRepository;
 import com.server.scapture.subscribe.service.SubscribeService;
 import com.server.scapture.user.dto.BananaAddResponseDto;
 import com.server.scapture.user.dto.BananaBalanceResponseDto;
+import com.server.scapture.user.dto.SubscribeResponseDto;
 import com.server.scapture.user.dto.UserProfileDto;
 import com.server.scapture.user.repository.UserRepository;
 import com.server.scapture.util.response.CustomAPIResponse;
@@ -107,10 +108,11 @@ public class UserServiceImpl implements UserService{
         }
         User user = foundUser.get();
 
+        subscribeService.checkRole(); // Subscribe 정보에 따른 User의 Role 확인 및 갱신
+
         Optional<Subscribe> foundSubscribe = subscribeRepository.findByUserId(user.getId());
         UserProfileDto userProfileDto;
 
-        subscribeService.checkRole(); // Subscribe 정보에 따른 Usre의 Role 확인 및 갱신
 
         // 구독중 아닐 시
         if (foundSubscribe.isEmpty()) {
@@ -155,11 +157,32 @@ public class UserServiceImpl implements UserService{
         }
         User user = foundUser.get();
 
+        subscribeService.checkRole(); // Subscribe 정보에 따른 User의 Role 확인 및 갱신
+
+        Optional<Subscribe> foundSubscribe = subscribeRepository.findByUserId(user.getId());
+
+        // 구독 생성 성공 (201) - 구독중이 아닌 경우
+        if (foundSubscribe.isEmpty()) {
+            Subscribe subscribe = Subscribe.builder()
+                    .user(user)
+                    .startDate(createSubscribeRequestDto.convert(true))
+                    .endDate(createSubscribeRequestDto.convert(false))
+                    .build();
+
+            subscribeRepository.save(subscribe);
+
+            SubscribeResponseDto subscribeResponseDto = SubscribeResponseDto.builder()
+                    .subscribeId(subscribe.getId())
+                    .startDate(subscribe.getStartDate())
+                    .endDate(subscribe.getEndDate())
+                    .build();
+
+            CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(201, subscribeResponseDto, "구독 생성이 완료되었습니다.");
+            return ResponseEntity.status(201).body(res);
+        }
 
         // 구독 갱신 성공 (200) - 이미 구독중인 경우
 
-
-        // 구독 생성 성공 (201) - 구독중이 아닌 경우
 
 
         return null;

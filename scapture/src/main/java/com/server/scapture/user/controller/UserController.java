@@ -14,8 +14,6 @@ import com.server.scapture.subscribe.dto.CreateSubscribeRequestDto;
 public class UserController {
 
     private final UserService userService;
-    private
-
 
     // 프로필 조회
     @GetMapping("/profile")
@@ -39,7 +37,7 @@ public class UserController {
     }
 
     // 구독 생성/갱신
-    @GetMapping("/subscription")
+    @PostMapping("/subscribe")
     public ResponseEntity<CustomAPIResponse<?>> manageSubscription(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader, @RequestBody CreateSubscribeRequestDto createSubscribeRequestDto) {
         return userService.manageSubscribe(authorizationHeader, createSubscribeRequestDto);
