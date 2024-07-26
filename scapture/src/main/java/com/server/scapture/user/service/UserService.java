@@ -19,4 +19,7 @@ public interface UserService {
 
     // 구독 갱신
     ResponseEntity<CustomAPIResponse<?>> extensionSubscribe(String authorizationHeader);
+
+    // 예약 내역 조회
+    ResponseEntity<CustomAPIResponse<?>> searchReservations(String authorizationHeader);
 }

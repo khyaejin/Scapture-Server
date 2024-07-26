@@ -1,22 +1,24 @@
 package com.server.scapture.user.service;
 
-import com.server.scapture.domain.Subscribe;
-import com.server.scapture.domain.User;
+import com.server.scapture.domain.*;
+import com.server.scapture.field.repository.FieldRepository;
 import com.server.scapture.oauth.jwt.JwtUtil;
+import com.server.scapture.reservation.repository.ReservationRepository;
+import com.server.scapture.schedule.repository.ScheduleRepository;
 import com.server.scapture.subscribe.dto.CreateSubscribeRequestDto;
 import com.server.scapture.subscribe.repository.SubscribeRepository;
 import com.server.scapture.subscribe.service.SubscribeService;
-import com.server.scapture.user.dto.BananaAddResponseDto;
-import com.server.scapture.user.dto.BananaBalanceResponseDto;
-import com.server.scapture.user.dto.SubscribeResponseDto;
-import com.server.scapture.user.dto.UserProfileDto;
+import com.server.scapture.user.dto.*;
 import com.server.scapture.user.repository.UserRepository;
+import com.server.scapture.util.date.DateUtil;
 import com.server.scapture.util.response.CustomAPIResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -27,6 +29,9 @@ public class UserServiceImpl implements UserService{
     private final JwtUtil jwtUtil;
     private final SubscribeRepository subscribeRepository;
     private final SubscribeService subscribeService;
+    private final ReservationRepository reservationRepository;
+    private final ScheduleRepository scheduleRepository;
+    private final FieldRepository fieldRepository;
 
     // 버내너 잔액 조회
     @Override
@@ -197,7 +202,6 @@ public class UserServiceImpl implements UserService{
             CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(404, "유효하지 않은 토큰이거나, 해당 ID에 해당하는 회원이 없습니다.");
             return ResponseEntity.status(401).body(res);
         }
-
         User user = foundUser.get();
 
         subscribeService.checkRole(); // Subscribe 정보에 따른 User의 Role 확인 및 갱신
@@ -224,5 +228,49 @@ public class UserServiceImpl implements UserService{
 
         CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(201, subscribeResponseDto, "구독 갱신이 완료되었습니다.");
         return ResponseEntity.status(201).body(res);
+    }
+
+    // 예약 내역 조회
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> searchReservations(String authorizationHeader) {
+        Optional<User> foundUser = jwtUtil.findUserByJwtToken(authorizationHeader);
+
+        // 회원정보 찾을 수 없음 (404)
+        if (foundUser.isEmpty()) {
+            CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(404, "유효하지 않은 토큰이거나, 해당 ID에 해당하는 회원이 없습니다.");
+            return ResponseEntity.status(401).body(res);
+        }
+        User user = foundUser.get();
+
+        // 해당 회원의 예약정보 불러오기
+        List<Reservation> reservations = reservationRepository.findByUser(user);
+
+        // 조회 성공 - 예약정보 존재하지 않는 경우 (200)
+        if (reservations.isEmpty()) {
+            CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(200, "아직 예약 내역이 없음");
+            return ResponseEntity.status(200).body(res);
+        }
+
+        // 조회 성공 - 예약정보 존재하는 경우 (200)
+        List<ReservationResponseDto> data = new ArrayList<>();
+
+        for (Reservation reservation : reservations) {
+            Schedule schedule = reservation.getSchedule();
+            String date = DateUtil.formatLocalDateTimeWithKoreanDay(schedule.getStartDate()); // date 형식 변환 -> 2024.07.18(목)
+
+            Field field = schedule.getField();
+            Stadium stadium = field.getStadium();
+            String name = stadium.getName() + " " + field.getName();
+
+            ReservationResponseDto dto = ReservationResponseDto.builder()
+                    .date(date)
+                    .name(name)
+                    .hours(stadium.getHours())
+                    .build();
+            data.add(dto);
+        }
+
+        CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, data, "예약 내역 조회 완료되었습니다.");
+        return ResponseEntity.status(200).body(res);
     }
 }
