@@ -247,8 +247,10 @@ public class UserServiceImpl implements UserService{
 
         // 조회 성공 - 예약정보 존재하지 않는 경우 (200)
         if (reservations.isEmpty()) {
-
+            CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(200, "아직 예약 내역이 없음");
+            return ResponseEntity.status(200).body(res);
         }
+
         return null;
     }
 }
