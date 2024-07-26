@@ -29,4 +29,16 @@ public class User {
     public void increaseTotalBananas(int balance) {
         this.banana += balance;
     }
+
+    // 프로필 편집 - 이미지
+    public void editProfileImage(String image) {
+        this.image = image;
+    }
+
+    // 프로필 편집 - 이미지 제외
+    public void editProfileWithoutImage(String name, String team, String location) {
+        this.name = name;
+        this.team = team;
+        this.location = location;
+    }
 }

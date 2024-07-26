@@ -10,12 +10,15 @@ import com.server.scapture.subscribe.repository.SubscribeRepository;
 import com.server.scapture.subscribe.service.SubscribeService;
 import com.server.scapture.user.dto.*;
 import com.server.scapture.user.repository.UserRepository;
+import com.server.scapture.util.S3.S3Service;
 import com.server.scapture.util.date.DateUtil;
 import com.server.scapture.util.response.CustomAPIResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +33,7 @@ public class UserServiceImpl implements UserService{
     private final SubscribeRepository subscribeRepository;
     private final SubscribeService subscribeService;
     private final ReservationRepository reservationRepository;
-    private final ScheduleRepository scheduleRepository;
-    private final FieldRepository fieldRepository;
+    private final S3Service s3Service;
 
     // 버내너 잔액 조회
     @Override
@@ -117,12 +119,11 @@ public class UserServiceImpl implements UserService{
         subscribeService.checkRole(); // Subscribe 정보에 따른 User의 Role 확인 및 갱신
 
         Optional<Subscribe> foundSubscribe = subscribeRepository.findByUserId(user.getId());
-        UserProfileDto userProfileDto;
-
+        ProfileViewDto profileViewDto;
 
         // 구독중 아닐 시
         if (foundSubscribe.isEmpty()) {
-            userProfileDto = UserProfileDto.builder()
+            profileViewDto = ProfileViewDto.builder()
                     .name(user.getName())
                     .team(user.getTeam())
                     .location(user.getLocation())
@@ -134,8 +135,7 @@ public class UserServiceImpl implements UserService{
         // 구독중일 시
         else{
             Subscribe subscribe = foundSubscribe.get();
-
-            userProfileDto = UserProfileDto.builder()
+            profileViewDto = ProfileViewDto.builder()
                     .name(user.getName())
                     .team(user.getTeam())
                     .location(user.getLocation())
@@ -146,9 +146,44 @@ public class UserServiceImpl implements UserService{
         }
 
         // 조회 성공(200)
-        CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, userProfileDto, "사용자 정보 조회 완료되었습니다.");
+        CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, profileViewDto, "사용자 정보 조회 완료되었습니다.");
         return ResponseEntity.status(200).body(res);
 
+    }
+
+    // 프로필 수정
+    public ResponseEntity<CustomAPIResponse<?>> editProfile(String authorizationHeader, ProfileEditDto profileEditDto, MultipartFile image) throws IOException {
+        Optional<User> foundUser = jwtUtil.findUserByJwtToken(authorizationHeader);
+
+        // 회원정보 찾을 수 없음 (404)
+        if (foundUser.isEmpty()) {
+            CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(404, "유효하지 않은 토큰이거나, 해당 ID에 해당하는 회원이 없습니다.");
+            return ResponseEntity.status(404).body(res);
+        }
+        User user = foundUser.get();
+
+        // 프로필 정보 업데이트
+        user.editProfileWithoutImage(profileEditDto.getName(), profileEditDto.getTeam(), profileEditDto.getLocation());
+
+        // 프로필 이미지 수정 있을 시
+        if (image != null && !image.isEmpty()) {
+            String imageName = String.valueOf(user.getId()); // 프로필 사진의 이름은 유저의 pk를 이용(한 유저당 하나의 프로필 사진)
+            String imageUrl = s3Service.modifyUserImage(image, imageName);
+            user.editProfileImage(imageUrl);
+        }
+
+        userRepository.save(user);
+
+        // 프로필 편집 성공 (200) - 검증을 위해 save한 user를 가지고 다시 profileEditDto 생성
+        ProfileEditDto updatedProfileEditDto = ProfileEditDto.builder()
+                .name(user.getName())
+                .team(user.getTeam())
+                .location(user.getLocation())
+                .image(user.getImage())
+                .build();
+
+        CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, updatedProfileEditDto, "프로필이 성공적으로 업데이트되었습니다.");
+        return ResponseEntity.status(200).body(res);
     }
 
     // 구독 생성
