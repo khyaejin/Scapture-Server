@@ -1,6 +1,7 @@
 package com.server.scapture.comment.service;
 
 import com.server.scapture.comment.dto.CreateCommentRequestDto;
+import com.server.scapture.comment.dto.GetCommentResponseDto;
 import com.server.scapture.comment.repository.CommentRepository;
 import com.server.scapture.commentLike.repository.CommentLikeRepository;
 import com.server.scapture.domain.Comment;
@@ -8,6 +9,7 @@ import com.server.scapture.domain.CommentLike;
 import com.server.scapture.domain.User;
 import com.server.scapture.domain.Video;
 import com.server.scapture.oauth.jwt.JwtUtil;
+import com.server.scapture.user.repository.UserRepository;
 import com.server.scapture.util.response.CustomAPIResponse;
 import com.server.scapture.video.repository.VideoRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -23,6 +27,7 @@ public class CommentServiceImpl implements CommentService{
     private final CommentRepository commentRepository;
     private final VideoRepository videoRepository;
     private final CommentLikeRepository commentLikeRepository;
+    private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
     @Override
@@ -61,6 +66,71 @@ public class CommentServiceImpl implements CommentService{
         CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.CREATED.value(), "댓글 작성 완료되었습니다.");
         return ResponseEntity
                 .status(HttpStatus.CREATED)
+                .body(responseBody);
+    }
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> getComment(String header, Long videoId) {
+        // 1. 사용자 조회
+        Optional<User> foundUser = jwtUtil.findUserByJwtToken(header);
+        // 1-1. 실패
+        if (foundUser.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 사용자입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(responseBody);
+        }
+        // 1-2. 성공
+        User user = foundUser.get();
+        // 2. 영상 조회
+        Optional<Video> foundVideo = videoRepository.findById(videoId);
+        // 2-1. 실패
+        if (foundVideo.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 영상입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(responseBody);
+        }
+        // 2-2. 성공
+        Video video = foundVideo.get();
+        // 3. 댓글 조회
+        List<Comment> commentList = commentRepository.findByVideo(video);
+        // 3-1. comment List null;
+        if (commentList.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.OK.value(), "댓글 조회 완료되었습니다.");
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(responseBody);
+        }
+        // 4. data
+        List<GetCommentResponseDto> data = new ArrayList<>();
+        for (Comment comment : commentList) {
+            // 4-1. 사용자 조회
+            Optional<User> foundCommentUser = userRepository.findById(comment.getUser().getId());
+            // 4-1-1. 실패
+            if (foundCommentUser.isEmpty()) {
+                CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 사용자(댓글)입니다.");
+                return ResponseEntity
+                        .status(HttpStatus.NOT_FOUND)
+                        .body(responseBody);
+            }
+            // 4-1-2. 성공
+            User commentUser = foundCommentUser.get();
+            // 4-2. isLiked 조회
+            boolean isLiked;
+            isLiked = commentLikeRepository.findByCommentAndUser(comment, user).isPresent();
+            GetCommentResponseDto responseDto = GetCommentResponseDto.builder()
+                    .name(commentUser.getName())
+                    .image(commentUser.getImage())
+                    .content(comment.getContent())
+                    .isLiked(isLiked)
+                    .likeCount(comment.getLikeCount())
+                    .build();
+            data.add(responseDto);
+        }
+        // 4. Response
+        CustomAPIResponse<List<GetCommentResponseDto>> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "댓글 조회 완료되었습니다.");
+        return ResponseEntity
+                .status(HttpStatus.OK)
                 .body(responseBody);
     }
     @Override
