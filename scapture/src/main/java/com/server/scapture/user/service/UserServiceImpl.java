@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 
@@ -182,9 +183,20 @@ public class UserServiceImpl implements UserService{
         }
 
         // 구독 갱신 성공 (200) - 이미 구독중인 경우
+        else {
+            Subscribe subscribe = foundSubscribe.get();
+            LocalDateTime newEndDate = subscribe.getEndDate().plusMonths(1); // 한달 추가
+            subscribe.updateEndDate(newEndDate);
+            subscribeRepository.save(subscribe);
 
+            SubscribeResponseDto subscribeResponseDto = SubscribeResponseDto.builder()
+                    .subscribeId(subscribe.getId())
+                    .startDate(subscribe.getStartDate())
+                    .endDate(subscribe.getEndDate())
+                    .build();
 
-
-        return null;
+            CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, subscribeResponseDto, "구독 갱신이 완료되었습니다.");
+            return ResponseEntity.status(200).body(res);
+        }
     }
 }
