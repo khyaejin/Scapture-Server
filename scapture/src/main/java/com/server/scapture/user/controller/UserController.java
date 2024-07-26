@@ -18,14 +18,14 @@ public class UserController {
     // 프로필 조회
     @GetMapping("/profile")
     public ResponseEntity<CustomAPIResponse<?>> getProfile(
-            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         return userService.getProfile(authorizationHeader);
     }
 
     // 버내너 잔액 조회
     @GetMapping("/bananas")
     public ResponseEntity<CustomAPIResponse<?>> searchBananas(
-            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         return userService.getBananaBalance(authorizationHeader);
     }
 
@@ -48,5 +48,12 @@ public class UserController {
     public ResponseEntity<CustomAPIResponse<?>> renewSubscribe(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         return userService.extensionSubscribe(authorizationHeader);
+    }
+
+    // 예약 내역 조회
+    @GetMapping("/reservations")
+    public ResponseEntity<CustomAPIResponse<?>> searchReservations(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader){
+        return userService.searchReservations(authorizationHeader);
     }
 }

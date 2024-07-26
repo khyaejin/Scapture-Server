@@ -225,4 +225,10 @@ public class UserServiceImpl implements UserService{
         CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(201, subscribeResponseDto, "구독 갱신이 완료되었습니다.");
         return ResponseEntity.status(201).body(res);
     }
+
+    // 예약 내역 조회
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> searchReservations(String authorizationHeader) {
+        return null;
+    }
 }
