@@ -56,8 +56,10 @@ public class StadiumServiceImpl implements StadiumService{
         stadiumRepository.save(stadium);
         // 2. Stadium Image 생성
         String dirName = stadium.getName();
+        int index = 1;
         for (MultipartFile image : images) {
-            String imageUrl = s3Service.upload(image, dirName);
+            String filename = dirName + index;
+            String imageUrl = s3Service.upload(image, dirName, filename);
             Image stadiumImage = Image.builder()
                     .stadium(stadium)
                     .image(imageUrl)
