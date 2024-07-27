@@ -29,6 +29,7 @@ public class User {
     public void increaseTotalBananas(int balance) {
         this.banana += balance;
     }
+    public void decreaseTotalBananas(int balance) {this.banana -= balance;}
 
     // 프로필 편집 - 이미지
     public void editProfileImage(String image) {
