@@ -96,6 +96,7 @@ public class VideoServiceImpl implements VideoService{
                         .stadiumName(stadium.getName())
                         .date(schedule.convertMonthAndDay())
                         .hours(schedule.convertHourAndMin())
+                        .views(video.getViews())
                         .build();
                 data.add(responseDto);
             }

@@ -15,4 +15,5 @@ public class GetVideosResponseDto {
     private String stadiumName;
     private String date;
     private String hours;
+    private int views;
 }
