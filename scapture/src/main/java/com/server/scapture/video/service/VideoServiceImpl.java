@@ -238,13 +238,23 @@ public class VideoServiceImpl implements VideoService{
         boolean isStored = storeRepository.findByVideoAndUser(video, user).isPresent();
         // 6. Response
         // 6-1. data
+        // 6-1-1. stadiumDto
+        GetStadiumInfoDto stadiumDto = GetStadiumInfoDto.builder()
+                .name(stadium.getName())
+                .description(stadium.getDescription())
+                .location(stadium.getLocation())
+                .isOutside(stadium.getIsOutside())
+                .parking(stadium.getParking())
+                .build();
+        // 6-1-2. dto
         GetVideoDetailResponseDto data = GetVideoDetailResponseDto.builder()
                 .name(video.getName())
                 .image(video.getImage())
                 .video(video.getVideo())
-                .stadiumName(stadium.getName())
                 .isLiked(isLiked)
                 .isStored(isStored)
+                .views(video.getViews())
+                .stadium(stadiumDto)
                 .build();
         // 6-2. responseBody
         CustomAPIResponse<GetVideoDetailResponseDto> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "영상 세부 조회 완료되었습니다.");

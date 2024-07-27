@@ -16,5 +16,5 @@ public class GetVideoDetailResponseDto {
     private boolean isLiked;
     private boolean isStored;
     private int views;
-    private
+    private GetStadiumInfoDto stadium;
 }
