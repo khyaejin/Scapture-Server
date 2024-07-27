@@ -124,8 +124,9 @@ public class VideoServiceImpl implements VideoService{
                     .name(video.getName())
                     .image(video.getImage())
                     .stadiumName(stadium.getName())
-                    .date(schedule.convertMonthAndDay())
+                    .date(schedule.convertAll())
                     .likeCount(video.getLikeCount())
+                    .views(video.getViews())
                     .build();
             data.add(responseDto);
         }
