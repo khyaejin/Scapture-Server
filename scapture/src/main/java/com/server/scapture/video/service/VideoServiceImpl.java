@@ -53,6 +53,7 @@ public class VideoServiceImpl implements VideoService{
                     .image(videoCreateDetailDto.getImage())
                     .video(videoCreateDetailDto.getVideo())
                     .likeCount(0)
+                    .views(0)
                     .build();
             videoRepository.save(video);
         }
