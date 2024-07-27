@@ -25,7 +25,7 @@ public class Video {
     @ColumnDefault("0")
     private int likeCount;          // 좋아요 수
     private int views;              // 조회 수
-
     public void increaseLikeCount() {this.likeCount+=1;}
     public void decreaseLikeCount() {this.likeCount-=1;}
+    public void increaseViews() {this.views+=1;}
 }
