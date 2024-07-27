@@ -17,7 +17,7 @@ import java.util.List;
 public class StadiumController {
     private final StadiumService stadiumService;
     @PostMapping
-    public ResponseEntity<CustomAPIResponse<?>> createStadium(@RequestPart CreateStadiumRequestDto data, @RequestPart List<MultipartFile> images) throws IOException {
+    public ResponseEntity<CustomAPIResponse<?>> createStadium(@RequestPart(value = "data") CreateStadiumRequestDto data, @RequestPart(value = "images", required = false) List<MultipartFile> images) throws IOException {
         return stadiumService.createStadium(data, images);
     }
     @GetMapping
