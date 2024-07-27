@@ -15,4 +15,5 @@ public class GetVideosByLikeCountResponseDto {
     private String stadiumName;
     private String date;
     private int likeCount;
+    private int views;
 }
