@@ -15,4 +15,6 @@ public class GetVideoDetailResponseDto {
     private String stadiumName;
     private boolean isLiked;
     private boolean isStored;
+    private int views;
+    private
 }
