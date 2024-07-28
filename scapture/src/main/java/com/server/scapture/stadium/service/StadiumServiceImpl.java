@@ -65,6 +65,7 @@ public class StadiumServiceImpl implements StadiumService{
                     .image(imageUrl)
                     .build();
             imageRepository.save(stadiumImage);
+            index++;
         }
         // 3. Response
         // 3-1. data
