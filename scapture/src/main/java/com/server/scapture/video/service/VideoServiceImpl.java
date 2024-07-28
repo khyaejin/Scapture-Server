@@ -224,23 +224,18 @@ public class VideoServiceImpl implements VideoService{
         Video video = foundVideo.get();
         // 2. User 조회
         Optional<User> foundUser = jwtUtil.findUserByJwtToken(header);
-        // 2-1. 실패
-        if (foundUser.isEmpty()) {
-            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 사용자입니다.");
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(responseBody);
-        }
-        // 2-2. 성공
-        User user = foundUser.get();
+        User user = null;
+        if(foundUser.isPresent()) user = foundUser.get();
         // 3. Stadium 조회
         Schedule schedule = scheduleRepository.findById(video.getSchedule().getId()).get();
         Field field = fieldRepository.findById(schedule.getField().getId()).get();
         Stadium stadium = stadiumRepository.findById(field.getStadium().getId()).get();
         // 4. 좋아요 여부 조회
-        boolean isLiked = videoLikeRepository.findByVideoAndUser(video, user).isPresent();
+        boolean isLiked = false;
+        if(user != null) isLiked = videoLikeRepository.findByVideoAndUser(video, user).isPresent();
         // 5. 저장 여부 조회
-        boolean isStored = storeRepository.findByVideoAndUser(video, user).isPresent();
+        boolean isStored = false;
+        if(user != null) isStored = storeRepository.findByVideoAndUser(video, user).isPresent();
         // 6. 영상 조회 수 증가
         video.increaseViews();
         videoRepository.save(video);
