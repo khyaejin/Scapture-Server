@@ -72,15 +72,8 @@ public class CommentServiceImpl implements CommentService{
     public ResponseEntity<CustomAPIResponse<?>> getComment(String header, Long videoId) {
         // 1. 사용자 조회
         Optional<User> foundUser = jwtUtil.findUserByJwtToken(header);
-        // 1-1. 실패
-        if (foundUser.isEmpty()) {
-            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 사용자입니다.");
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(responseBody);
-        }
-        // 1-2. 성공
-        User user = foundUser.get();
+        User user = null;
+        if(foundUser.isPresent()) user = foundUser.get();
         // 2. 영상 조회
         Optional<Video> foundVideo = videoRepository.findById(videoId);
         // 2-1. 실패
@@ -116,8 +109,8 @@ public class CommentServiceImpl implements CommentService{
             // 4-1-2. 성공
             User commentUser = foundCommentUser.get();
             // 4-2. isLiked 조회
-            boolean isLiked;
-            isLiked = commentLikeRepository.findByCommentAndUser(comment, user).isPresent();
+            boolean isLiked = false;
+            if(user != null) isLiked = commentLikeRepository.findByCommentAndUser(comment, user).isPresent();
             GetCommentResponseDto responseDto = GetCommentResponseDto.builder()
                     .name(commentUser.getName())
                     .image(commentUser.getImage())
