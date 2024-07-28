@@ -285,5 +285,4 @@ public class StadiumServiceImpl implements StadiumService{
                 .status(HttpStatus.OK)
                 .body(responseBody);
     }
-
 }
