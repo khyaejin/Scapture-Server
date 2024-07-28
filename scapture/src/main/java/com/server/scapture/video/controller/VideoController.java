@@ -41,7 +41,7 @@ public class VideoController {
     }
 
     @GetMapping("/{videoId}/details")
-    public ResponseEntity<CustomAPIResponse<?>> getVideoDetail(@RequestHeader(HttpHeaders.AUTHORIZATION) String header, @PathVariable("videoId") Long videoId) {
+    public ResponseEntity<CustomAPIResponse<?>> getVideoDetail(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String header, @PathVariable("videoId") Long videoId) {
         return videoService.getVideoDetail(header, videoId);
     }
 
