@@ -12,9 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class SubscribeResponseDto {
-
     private Long subscribeId;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-
 }
