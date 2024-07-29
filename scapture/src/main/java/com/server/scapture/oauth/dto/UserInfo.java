@@ -14,7 +14,8 @@ public class UserInfo {
     private String email;
     // @Builder.Default //후에 기본값 지정해주기 -> 기본 카카오톡 프로필?
     private String image;
-    private Role role;
+    @Builder.Default
+    private Role role = Role.BASIC;
 
     public User toEntity() {
         return User.builder()
