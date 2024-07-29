@@ -18,7 +18,7 @@ import java.util.List;
 public class ScheduleController {
     private final ScheduleService scheduleService;
     @PostMapping
-    public ResponseEntity<CustomAPIResponse<?>> createSchedule(@RequestBody List<CreateScheduleRequestDto> createScheduleRequestDtos) {
-        return scheduleService.createSchedule(createScheduleRequestDtos);
+    public ResponseEntity<CustomAPIResponse<?>> createSchedule(@RequestBody CreateScheduleRequestDto createScheduleRequestDto) {
+        return scheduleService.createSchedule(createScheduleRequestDto);
     }
 }

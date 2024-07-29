@@ -7,5 +7,5 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 public interface ScheduleService {
-    ResponseEntity<CustomAPIResponse<?>> createSchedule(List<CreateScheduleRequestDto> createScheduleRequestDtos);
+    ResponseEntity<CustomAPIResponse<?>> createSchedule(CreateScheduleRequestDto createScheduleRequestDto);
 }
