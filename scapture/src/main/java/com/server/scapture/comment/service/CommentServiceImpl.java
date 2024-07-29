@@ -112,6 +112,7 @@ public class CommentServiceImpl implements CommentService{
             boolean isLiked = false;
             if(user != null) isLiked = commentLikeRepository.findByCommentAndUser(comment, user).isPresent();
             GetCommentResponseDto responseDto = GetCommentResponseDto.builder()
+                    .commentId(comment.getId())
                     .name(commentUser.getName())
                     .image(commentUser.getImage())
                     .content(comment.getContent())

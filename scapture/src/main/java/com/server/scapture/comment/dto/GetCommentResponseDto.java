@@ -9,6 +9,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class GetCommentResponseDto {
+    private Long commentId;
     private String name;
     private String image;
     private String content;
