@@ -57,7 +57,7 @@ public class UserController {
         return userService.createSubscribe(authorizationHeader, createSubscribeRequestDto);
     }
 
-    // 구독 생성
+    // 구독 갱신
     @PutMapping("/subscribe")
     public ResponseEntity<CustomAPIResponse<?>> renewSubscribe(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
