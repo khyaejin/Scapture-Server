@@ -50,18 +50,11 @@ public class UserController {
         return userService.addBananas(authorizationHeader, balance);
     }
 
-    // 구독 생성
+    // 구독 관리 (생성/갱신)
     @PostMapping("/subscribe")
-    public ResponseEntity<CustomAPIResponse<?>> createSubscribe(
-            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader, @RequestBody CreateSubscribeRequestDto createSubscribeRequestDto) {
-        return userService.createSubscribe(authorizationHeader, createSubscribeRequestDto);
-    }
-
-    // 구독 갱신
-    @PutMapping("/subscribe")
-    public ResponseEntity<CustomAPIResponse<?>> renewSubscribe(
+    public ResponseEntity<CustomAPIResponse<?>> manageSubscribe(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
-        return userService.extensionSubscribe(authorizationHeader);
+        return userService.manageSubscribe(authorizationHeader);
     }
 
     // 예약 내역 조회
