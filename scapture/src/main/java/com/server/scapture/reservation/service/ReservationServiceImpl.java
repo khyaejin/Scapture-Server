@@ -10,6 +10,7 @@ import com.server.scapture.schedule.repository.ScheduleRepository;
 import com.server.scapture.stadium.repository.StadiumRepository;
 import com.server.scapture.util.response.CustomAPIResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -17,11 +18,9 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReservationServiceImpl implements ReservationService{
@@ -75,7 +74,7 @@ public class ReservationServiceImpl implements ReservationService{
                 .body(responseBody);
     }
     @Override
-    public ResponseEntity<CustomAPIResponse<?>> getReservation(Long stadiumId, String date) {
+    public ResponseEntity<CustomAPIResponse<?>> getReservation(Long stadiumId, Long fieldId, String date) {
         // 1. 경기장 조회
         Optional<Stadium> foundStadium = stadiumRepository.findById(stadiumId);
         // 1-1. 실패
@@ -92,9 +91,10 @@ public class ReservationServiceImpl implements ReservationService{
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDate parsedDate = LocalDate.parse(date, formatter);
         // 2-2. 기한(1주일) 내 날짜 확인
-        LocalDate startDate =  LocalDate.now().minusDays(8);
-        LocalDate endDate = LocalDate.now().plusDays(1);
-        // 2-3. 검증 실패(1주일 전이 아닌 다른 요청 날짜)
+        LocalDate startDate =  LocalDate.now().minusDays(1);
+        LocalDate endDate = LocalDate.now().plusDays(8);
+        log.info("시작 날짜 : {} , 종료 날짜: {}", startDate, endDate);
+        // 2-3. 검증 실패(1주일 후가 아닌 다른 요청 날짜)
         if (!(parsedDate.isAfter(startDate) && parsedDate.isBefore(endDate))) {
             CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.FORBIDDEN.value(), "허용되지 않는 날짜입니다.");
             return ResponseEntity

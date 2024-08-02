@@ -7,6 +7,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/reservations")
@@ -17,8 +19,8 @@ public class ReservationController {
         return reservationService.createReservation(header, scheduleId);
     }
 
-    @GetMapping("/{stadiumId}")
-    public ResponseEntity<CustomAPIResponse<?>> getReservation(@PathVariable("stadiumId") Long stadiumId, @RequestParam("date") String date) {
-        return reservationService.getReservation(stadiumId, date);
+    @GetMapping("/{stadiumId}/{fieldId}")
+    public ResponseEntity<CustomAPIResponse<?>> getReservation(@PathVariable("stadiumId") Long stadiumId, @PathVariable("fieldId") Long fieldId, @RequestParam("date") String date) {
+        return reservationService.getReservation(stadiumId, fieldId, date);
     }
 }
