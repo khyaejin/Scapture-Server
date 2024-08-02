@@ -495,7 +495,15 @@ public class VideoServiceImpl implements VideoService{
         // 2-2. 성공
         User user = foundUser.get();
         // 3. 버내너 차감
-        user.decreaseTotalBananas(3);
+        // 3-1. 사용자 버내너 없음
+        if (user.getBanana() == 0) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.PAYMENT_REQUIRED.value(), "사용자 버내너가 부족합니다.");
+            return ResponseEntity
+                    .status(HttpStatus.PAYMENT_REQUIRED)
+                    .body(responseBody);
+        }
+        // 3-2. 성공
+        user.decreaseTotalBananas(1);
         userRepository.save(user);
         // 4. Download 생성
         // 4-1. 중복 검사
