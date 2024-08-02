@@ -22,12 +22,10 @@ public interface UserService {
     // 프로필 편집
     ResponseEntity<CustomAPIResponse<?>> editProfile(String authorizationHeader, ProfileEditDto profileEditDto, MultipartFile image) throws IOException;
 
-    // 구독 생성
-    ResponseEntity<CustomAPIResponse<?>> createSubscribe(String authorizationHeader, CreateSubscribeRequestDto createSubscribeRequestDto);
-
-    // 구독 갱신
-    ResponseEntity<CustomAPIResponse<?>> extensionSubscribe(String authorizationHeader);
+    // 구독 관리 (생성/갱신)
+    ResponseEntity<CustomAPIResponse<?>> manageSubscribe(String authorizationHeader);
 
     // 예약 내역 조회
     ResponseEntity<CustomAPIResponse<?>> searchReservations(String authorizationHeader);
+
 }

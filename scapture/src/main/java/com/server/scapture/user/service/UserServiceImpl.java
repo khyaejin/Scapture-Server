@@ -14,12 +14,14 @@ import com.server.scapture.util.S3.S3Service;
 import com.server.scapture.util.date.DateUtil;
 import com.server.scapture.util.response.CustomAPIResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cglib.core.Local;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -186,10 +188,11 @@ public class UserServiceImpl implements UserService{
         return ResponseEntity.status(200).body(res);
     }
 
-    // 구독 생성
+    // 구독 관리 (생성/갱신)
     @Override
-    public ResponseEntity<CustomAPIResponse<?>> createSubscribe(String authorizationHeader, CreateSubscribeRequestDto createSubscribeRequestDto) {
+    public ResponseEntity<CustomAPIResponse<?>> manageSubscribe(String authorizationHeader) {
         Optional<User> foundUser = jwtUtil.findUserByJwtToken(authorizationHeader);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
 
         // 회원정보 찾을 수 없음 (404)
         if (foundUser.isEmpty()) {
@@ -202,20 +205,46 @@ public class UserServiceImpl implements UserService{
 
         Optional<Subscribe> foundSubscribe = subscribeRepository.findByUserId(user.getId());
 
-        // 해당 회원이 이미 구독중인 경우(401)
+        // 이미 구독중인 경우 -> 구독 갱신
         if (foundSubscribe.isPresent()) {
-            CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(401, "이미 구독중인 회원입니다.");
-            return ResponseEntity.status(401).body(res);
+            Subscribe subscribe = foundSubscribe.get();
+            LocalDateTime newEndDate = subscribe.getEndDate().plusMonths(1); // 한달 추가
+            subscribe.updateEndDate(newEndDate);
+            subscribeRepository.save(subscribe);
+
+          /*  // yyyy.MM.dd 형태로 변환
+            LocalDateTime startDateTime = subscribe.getStartDate();
+            String startDate = startDateTime.format(formatter);
+            LocalDateTime endDateTime = subscribe.getEndDate();
+            String endDate = endDateTime.format(formatter);*/
+
+            SubscribeResponseDto subscribeResponseDto = SubscribeResponseDto.builder()
+                    .subscribeId(subscribe.getId())
+                    .startDate(subscribe.getStartDate())
+                    .endDate(subscribe.getEndDate())
+                    .build();
+
+            CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(201, subscribeResponseDto, "구독 갱신이 완료되었습니다.");
+            return ResponseEntity.status(201).body(res);
         }
 
-        // 구독 생성 성공 (201) - 구독중이 아닌 경우
+        // 구독중이 아닌 경우 -> 구독 생성
+        LocalDateTime startDateTime = LocalDateTime.now(); // 현재시간
+        LocalDateTime endDateTime = startDateTime.plusMonths(1); // 한 달 추가
+
         Subscribe subscribe = Subscribe.builder()
                 .user(user)
-                .startDate(createSubscribeRequestDto.convert(true))
-                .endDate(createSubscribeRequestDto.convert(false))
+                .startDate(startDateTime)
+                .endDate(endDateTime)
                 .build();
 
         subscribeRepository.save(subscribe);
+
+       /* // yyyy.MM.dd 형태로 변환
+        startDateTime = subscribe.getStartDate();
+        String startDate = startDateTime.format(formatter);
+        endDateTime = subscribe.getEndDate();
+        String endDate = endDateTime.format(formatter);*/
 
         SubscribeResponseDto subscribeResponseDto = SubscribeResponseDto.builder()
                 .subscribeId(subscribe.getId())
@@ -224,44 +253,6 @@ public class UserServiceImpl implements UserService{
                 .build();
 
         CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(201, subscribeResponseDto, "구독 생성이 완료되었습니다.");
-        return ResponseEntity.status(201).body(res);
-    }
-
-    // 구독 갱신
-    @Override
-    public ResponseEntity<CustomAPIResponse<?>> extensionSubscribe(String authorizationHeader) {
-        Optional<User> foundUser = jwtUtil.findUserByJwtToken(authorizationHeader);
-
-        // 회원정보 찾을 수 없음 (404)
-        if (foundUser.isEmpty()) {
-            CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(404, "유효하지 않은 토큰이거나, 해당 ID에 해당하는 회원이 없습니다.");
-            return ResponseEntity.status(401).body(res);
-        }
-        User user = foundUser.get();
-
-        subscribeService.checkRole(); // Subscribe 정보에 따른 User의 Role 확인 및 갱신
-
-        Optional<Subscribe> foundSubscribe = subscribeRepository.findByUserId(user.getId());
-
-        // 구독중이 아닌 회원의 경우 (401)
-        if (foundSubscribe.isEmpty()) {
-            CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(401, "해당 회원은 구독중이 아닙니다.");
-            return ResponseEntity.status(401).body(res);
-        }
-
-        // 구독 갱신 성공 (200) - 이미 구독중인 경우
-        Subscribe subscribe = foundSubscribe.get();
-        LocalDateTime newEndDate = subscribe.getEndDate().plusMonths(1); // 한달 추가
-        subscribe.updateEndDate(newEndDate);
-        subscribeRepository.save(subscribe);
-
-        SubscribeResponseDto subscribeResponseDto = SubscribeResponseDto.builder()
-                .subscribeId(subscribe.getId())
-                .startDate(subscribe.getStartDate())
-                .endDate(subscribe.getEndDate())
-                .build();
-
-        CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(201, subscribeResponseDto, "구독 갱신이 완료되었습니다.");
         return ResponseEntity.status(201).body(res);
     }
 
