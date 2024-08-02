@@ -101,19 +101,90 @@ public class ReservationServiceImpl implements ReservationService{
                     .status(HttpStatus.FORBIDDEN)
                     .body(responseBody);
         }
-        // 3. 경기장 예약 정보 조회(전체)
-        // 3-1. responseDto
-        List<SortReservationDto> sortedList = new ArrayList<>();
-        // 3-2. 구장 조회
-        List<Field> fieldList = fieldRepository.findByStadium(stadium);
-        // 3-3. 운영 일정 조회
-        int index = 0;
-        for (Field field : fieldList) {
+        // data
+        List<List<GetReservationResponseDto>> data = new ArrayList<>();
+        if (fieldId == 0) {
+            // 3. 경기장 예약 정보 조회(전체)
+            // 3-1. responseDto
+            List<SortReservationDto> sortedList = new ArrayList<>();
+            // 3-2. 구장 조회
+            List<Field> fieldList = fieldRepository.findByStadium(stadium);
+            // 3-3. 운영 일정 조회
+            int index = 0;
+            for (Field field : fieldList) {
+                List<Schedule> scheduleList = scheduleRepository.findScheduleByFieldBetweenMonthAndDay(field, parsedDate);
+                for (Schedule schedule : scheduleList) {
+                    SortReservationDto dto = SortReservationDto.builder()
+                            .index(index)
+                            .startDate(schedule.getStartDate())
+                            .scheduleId(schedule.getId())
+                            .name(field.getName())
+                            .type(field.getType())
+                            .hours(schedule.convertHourAndMin())
+                            .date(schedule.convertAll())
+                            .isReserved(schedule.getIsReserved())
+                            .price(schedule.getPrice())
+                            .build();
+                    sortedList.add(dto);
+                }
+                index++;
+            }
+            // 4. data 0
+            if (sortedList.isEmpty()) {
+                CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.OK.value(), "예약 조회 완료되었습니다.");
+                return ResponseEntity
+                        .status(HttpStatus.OK)
+                        .body(responseBody);
+            }
+            // 5. 시간순 정렬
+            sortedList.sort(new Comparator<SortReservationDto>() {
+                @Override
+                public int compare(SortReservationDto o1, SortReservationDto o2) {
+                    if (o1.getStartDate().equals(o2.getStartDate())) return o1.getIndex() - o2.getIndex();
+                    return o1.getStartDate().compareTo(o2.getStartDate());
+                }
+            });
+            // 6. 같은 시간끼리 리스트 만들기
+            // 6-1. 같은 시간 리스트업
+            List<GetReservationResponseDto> responseDtoList = new ArrayList<>();
+            LocalDateTime targetTime = sortedList.get(0).getStartDate();
+            for (SortReservationDto sortReservationDto : sortedList) {
+                // 6-1-1. responseDto
+                GetReservationResponseDto responseDto = GetReservationResponseDto.builder()
+                        .scheduleId(sortReservationDto.getScheduleId())
+                        .name(sortReservationDto.getName())
+                        .type(sortReservationDto.getType())
+                        .hours(sortReservationDto.getHours())
+                        .date(sortReservationDto.getDate())
+                        .isReserved(sortReservationDto.isReserved())
+                        .price(sortReservationDto.getPrice())
+                        .build();
+                // 6-1-1. 같은 시간 리스트업
+                if (!targetTime.equals(sortReservationDto.getStartDate())) {
+                    data.add(responseDtoList);
+                    responseDtoList = new ArrayList<>();
+                    targetTime = sortReservationDto.getStartDate();
+                }
+                responseDtoList.add(responseDto);
+            }
+        } else {
+            // 구장 별 조회
+            // 7. 구장 조회
+            Optional<Field> foundField = fieldRepository.findById(fieldId);
+            // 7-1. 실패
+            if (foundField.isEmpty()) {
+                CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 구장입니다.");
+                return ResponseEntity
+                        .status(HttpStatus.NOT_FOUND)
+                        .body(responseBody);
+            }
+            // 7-2. 성공
+            Field field = foundField.get();
+            // 8. 운영 일정 조회
             List<Schedule> scheduleList = scheduleRepository.findScheduleByFieldBetweenMonthAndDay(field, parsedDate);
             for (Schedule schedule : scheduleList) {
-                SortReservationDto dto = SortReservationDto.builder()
-                        .index(index)
-                        .startDate(schedule.getStartDate())
+                List<GetReservationResponseDto> responseDtos = new ArrayList<>();
+                GetReservationResponseDto responseDto = GetReservationResponseDto.builder()
                         .scheduleId(schedule.getId())
                         .name(field.getName())
                         .type(field.getType())
@@ -122,51 +193,12 @@ public class ReservationServiceImpl implements ReservationService{
                         .isReserved(schedule.getIsReserved())
                         .price(schedule.getPrice())
                         .build();
-                sortedList.add(dto);
+                responseDtos.add(responseDto);
+                data.add(responseDtos);
             }
-            index++;
+
         }
-        // 4. data 0
-        if (sortedList.isEmpty()) {
-            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.OK.value(), "예약 조회 완료되었습니다.");
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(responseBody);
-        }
-        // 5. 시간순 정렬
-        sortedList.sort(new Comparator<SortReservationDto>() {
-            @Override
-            public int compare(SortReservationDto o1, SortReservationDto o2) {
-                if(o1.getStartDate().equals(o2.getStartDate())) return o1.getIndex() - o2.getIndex();
-                return o1.getStartDate().compareTo(o2.getStartDate());
-            }
-        });
-        // 6. 같은 시간끼리 리스트 만들기
-        // 6-1. data
-        List<List<GetReservationResponseDto>> data = new ArrayList<>();
-        // 6-2. 같은 시간 리스트업
-        List<GetReservationResponseDto> responseDtoList = new ArrayList<>();
-        LocalDateTime targetTime = sortedList.get(0).getStartDate();
-        for (SortReservationDto sortReservationDto : sortedList) {
-            // 6-2-1. responseDto
-            GetReservationResponseDto responseDto = GetReservationResponseDto.builder()
-                    .scheduleId(sortReservationDto.getScheduleId())
-                    .name(sortReservationDto.getName())
-                    .type(sortReservationDto.getType())
-                    .hours(sortReservationDto.getHours())
-                    .date(sortReservationDto.getDate())
-                    .isReserved(sortReservationDto.isReserved())
-                    .price(sortReservationDto.getPrice())
-                    .build();
-            // 6-2-1. 같은 시간 리스트업
-            if (!targetTime.equals(sortReservationDto.getStartDate())) {
-                data.add(responseDtoList);
-                responseDtoList = new ArrayList<>();
-                targetTime = sortReservationDto.getStartDate();
-            }
-            responseDtoList.add(responseDto);
-        }
-        // 7. Response
+        // 9. Response
         CustomAPIResponse<List<List<GetReservationResponseDto>>> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "예약 조회 완료되었습니다.");
         return ResponseEntity
                 .status(HttpStatus.OK)
