@@ -18,7 +18,7 @@ public class StadiumController {
     private final StadiumService stadiumService;
     @GetMapping("/main")
     public ResponseEntity<CustomAPIResponse<?>> getMainInfo() {
-        return null;
+        return stadiumService.getMainInfo();
     }
     @PostMapping
     public ResponseEntity<CustomAPIResponse<?>> createStadium(@RequestPart(value = "data") CreateStadiumRequestDto data, @RequestPart(value = "images", required = false) List<MultipartFile> images) throws IOException {

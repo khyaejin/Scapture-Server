@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface VideoRepository extends JpaRepository<Video, Long> {
@@ -14,4 +15,5 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
     int countBySchedule(Schedule schedule);
     List<Video> findBySchedule(Schedule schedule);
     List<Video> findTop10ByOrderByLikeCountDesc();
+    Optional<Video> findTop1ByOrderByLikeCountDesc();
 }

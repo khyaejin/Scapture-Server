@@ -1,9 +1,6 @@
 package com.server.scapture.stadium.service;
 
-import com.server.scapture.domain.Field;
-import com.server.scapture.domain.Image;
-import com.server.scapture.domain.Schedule;
-import com.server.scapture.domain.Stadium;
+import com.server.scapture.domain.*;
 import com.server.scapture.field.dto.SimpleFieldResponseDto;
 import com.server.scapture.field.repository.FieldRepository;
 import com.server.scapture.image.dto.SimpleImageResponseDto;
@@ -39,7 +36,46 @@ public class StadiumServiceImpl implements StadiumService{
 
     @Override
     public ResponseEntity<CustomAPIResponse<?>> getMainInfo() {
-        return null;
+        // 1. 인기 영상
+        // 1-1. 영상 조회
+        Video video = videoRepository.findTop1ByOrderByLikeCountDesc().get();
+        // 1-2. 영상 경기장, 구장, 운영 일정 조회
+        Schedule schedule = scheduleRepository.findById(video.getSchedule().getId()).get();
+        Field field = fieldRepository.findById(schedule.getField().getId()).get();
+        Stadium stadium = stadiumRepository.findById(field.getStadium().getId()).get();
+        // 1-2. Dto 생성
+        GetMainInfoPopularDto popularDto = GetMainInfoPopularDto.builder()
+                .videoId(video.getId())
+                .image(video.getImage())
+                .stadiumName(stadium.getName())
+                .date(schedule.convertAll())
+                .hours(schedule.convertHourAndMin())
+                .build();
+        // 2. 제휴 구장 List
+        // 2-1. 영상 리스트 조회
+        List<Stadium> stadiumList = stadiumRepository.findAll();
+        // 2-2. Dto 생성
+        List<GetMainInfoStadiumDto> stadiumDtoList;
+        if(stadiumList.isEmpty()) stadiumDtoList = null;
+        else stadiumDtoList = new ArrayList<>();
+        for (Stadium foundStadium : stadiumList) {
+            String image = imageRepository.findFirst1ByStadium(foundStadium).get().getImage();
+            GetMainInfoStadiumDto stadiumDto = GetMainInfoStadiumDto.builder()
+                    .stadiumId(foundStadium.getId())
+                    .image(image)
+                    .name(foundStadium.getName())
+                    .build();
+            stadiumDtoList.add(stadiumDto);
+        }
+        // 3. Response
+        GetMainInfoResponseDto data = GetMainInfoResponseDto.builder()
+                .popular(popularDto)
+                .stadiums(stadiumDtoList)
+                .build();
+        CustomAPIResponse<GetMainInfoResponseDto> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "메인 조회가 완료되었습니다.");
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(responseBody);
     }
     // 관리자 - 경기장 생성
     @Override
