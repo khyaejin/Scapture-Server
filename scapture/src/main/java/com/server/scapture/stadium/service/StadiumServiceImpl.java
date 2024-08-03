@@ -37,6 +37,10 @@ public class StadiumServiceImpl implements StadiumService{
     private final VideoRepository videoRepository;
     private final S3Service s3Service;
 
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> getMainInfo() {
+        return null;
+    }
     // 관리자 - 경기장 생성
     @Override
     public ResponseEntity<CustomAPIResponse<?>> createStadium(CreateStadiumRequestDto data, List<MultipartFile> images) throws IOException {
