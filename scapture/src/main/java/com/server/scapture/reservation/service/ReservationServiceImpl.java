@@ -67,7 +67,10 @@ public class ReservationServiceImpl implements ReservationService{
                 .schedule(schedule)
                 .build();
         reservationRepository.save(reservation);
-        // 4. Response
+        // 4. 예약 완료 처리
+        schedule.setReserved();
+        scheduleRepository.save(schedule);
+        // 5. Response
         CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.CREATED.value(), "예약 완료되었습니다.");
         return ResponseEntity
                 .status(HttpStatus.CREATED)

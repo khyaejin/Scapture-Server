@@ -40,4 +40,5 @@ public class Schedule {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM.dd.E", Locale.KOREA);
         return startDate.format(formatter);
     }
+    public void setReserved(){this.isReserved = true;}
 }
