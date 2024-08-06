@@ -80,12 +80,12 @@ public class GoogleLoginServiceImpl extends AbstractSocialLoginService implement
     @Override
     public ResponseEntity<CustomAPIResponse<?>> getUserInfo(String accessToken) {
         String providerId = null;
-        String provider = "google";
+        String provider = "naver";
         String nickname = null;
         String email = null;
         String profileImageUrl = null;
 
-        String reqUrl = "https://www.googleapis.com/oauth2/v2/userinfo";
+        String reqUrl = "https://openapi.naver.com/v1/nid/me";
         RestTemplate restTemplate = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaders();
@@ -99,21 +99,28 @@ public class GoogleLoginServiceImpl extends AbstractSocialLoginService implement
             if (response.getStatusCode() == HttpStatus.OK) {
                 JSONObject jsonObject = new JSONObject(response.getBody());
 
-                providerId = jsonObject.optString("id", null);
-                nickname = jsonObject.optString("name", null);
-                email = jsonObject.optString("email", null);
-                profileImageUrl = jsonObject.optString("picture", null);
+                if (jsonObject.has("response")) {
+                    JSONObject responseObj = jsonObject.getJSONObject("response");
 
-                UserInfo userInfo = UserInfo.builder()
-                        .provider(provider)
-                        .providerId(providerId)
-                        .name(nickname)
-                        .email(email)
-                        .image(profileImageUrl)
-                        .build();
+                    providerId = responseObj.optString("id", null);
+                    nickname = responseObj.optString("nickname", null);
+                    email = responseObj.optString("email", null);
+                    profileImageUrl = responseObj.optString("profile_image", null);
 
-                CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, userInfo, "유저 정보를 성공적으로 가져왔습니다.");
-                return ResponseEntity.status(200).body(res);
+                    UserInfo userInfo = UserInfo.builder()
+                            .provider(provider)
+                            .providerId(providerId)
+                            .name(nickname)
+                            .email(email)
+                            .image(profileImageUrl)
+                            .build();
+
+                    CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, userInfo, "유저 정보를 성공적으로 가져왔습니다.");
+                    return ResponseEntity.status(200).body(res);
+                } else {
+                    CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(401, "유효하지 않은 응답입니다.");
+                    return ResponseEntity.status(401).body(res);
+                }
             } else if (response.getStatusCode() == HttpStatus.UNAUTHORIZED) {
                 CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(401, "토큰이 만료되었거나 유효하지 않은 토큰입니다.");
                 return ResponseEntity.status(401).body(res);
