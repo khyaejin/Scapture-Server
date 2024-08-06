@@ -21,8 +21,6 @@ import java.util.Optional;
 @RequestMapping("api/oauth")
 @RequiredArgsConstructor
 public class SignController {
-    private static final Logger logger = LoggerFactory.getLogger(SignController.class);
-
     private final NaverLoginService naverLoginService;
     private final KakaoLoginService kakaoLoginService;
     private final GoogleLoginService googleLoginService;
@@ -31,7 +29,6 @@ public class SignController {
     @PostMapping(value = "/social/kakao")
     public ResponseEntity<CustomAPIResponse<?>> kakaoLogin(@RequestParam String code) {
         // 1. 인가 코드 받기 (@RequestParam String code)
-        logger.info("Request_Code: {}", code);
         if (code.isEmpty()) {
             return ResponseEntity
                     .status(HttpStatus.FORBIDDEN)
@@ -54,10 +51,6 @@ public class SignController {
         // 4. 로그인/회원가입 후 JWT 토큰 발급
         UserInfo userInfo = (UserInfo) userInfoResponse.getBody().getData(); //후에 서비스 계층 안으로 넣어주기
         //log를 통한 테스트 용도
-        logger.info("User_Email: {}", userInfo.getEmail());
-        logger.info("User_Name: {}", userInfo.getName());
-        logger.info("User_ProviderId: {}", userInfo.getProviderId());
-        logger.info("User_Image: {}", userInfo.getImage());
         ResponseEntity<CustomAPIResponse<?>> loginResponse = kakaoLoginService.login(userInfo);
         if (loginResponse.getBody().getStatus() != 200 || loginResponse.getBody().getStatus() != 201) {
             return ResponseEntity.status(loginResponse.getStatusCode()).body(loginResponse.getBody());
@@ -69,9 +62,6 @@ public class SignController {
     @PostMapping(value = "/social/naver")
     public ResponseEntity<CustomAPIResponse<?>> naverLogin(@RequestParam String code, @RequestParam String state) {
         // 1. 인가 코드 받기 (@RequestParam String code)
-        logger.info("Request_Code: {}", code);
-        logger.info("Request_State: {}", state);
-
         if (code.isEmpty() || state.isEmpty()) {
             return ResponseEntity
                     .status(HttpStatus.FORBIDDEN)
@@ -92,11 +82,7 @@ public class SignController {
 
         // 4. 로그인/회원가입 후 JWT 토큰 발급
         UserInfo userInfo = (UserInfo) userInfoResponse.getBody().getData(); //후에 서비스 계층 안으로 넣어주기
-        //log를 통한 테스트 용도
-        logger.info("User_Email: {}", userInfo.getEmail());
-        logger.info("User_Name: {}", userInfo.getName());
-        logger.info("User_ProviderId: {}", userInfo.getProviderId());
-        logger.info("User_Image: {}", userInfo.getImage());
+
         ResponseEntity<CustomAPIResponse<?>> loginResponse = naverLoginService.login(userInfo);
         if (loginResponse.getBody().getStatus() != 200 || loginResponse.getBody().getStatus() != 201) {
             return ResponseEntity.status(loginResponse.getStatusCode()).body(loginResponse.getBody());
@@ -108,7 +94,6 @@ public class SignController {
     @PostMapping(value = "/social/google")
     public ResponseEntity<CustomAPIResponse<?>> googleLogin(@RequestParam String code) {
         // 1. 인가 코드 받기 (@RequestParam String code)
-        logger.info("Request_Code: {}", code);
         if (code.isEmpty()) {
             return ResponseEntity
                     .status(HttpStatus.FORBIDDEN)
@@ -130,11 +115,7 @@ public class SignController {
 
         // 4. 로그인/회원가입 후 JWT 토큰 발급
         UserInfo userInfo = (UserInfo) userInfoResponse.getBody().getData(); //후에 서비스 계층 안으로 넣어주기
-        //log를 통한 테스트 용도
-        logger.info("User_Email: {}", userInfo.getEmail());
-        logger.info("User_Name: {}", userInfo.getName());
-        logger.info("User_ProviderId: {}", userInfo.getProviderId());
-        logger.info("User_Image: {}", userInfo.getImage());
+
         ResponseEntity<CustomAPIResponse<?>> loginResponse = googleLoginService.login(userInfo);
         if (loginResponse.getBody().getStatus() != 200 || loginResponse.getBody().getStatus() != 201) {
             return ResponseEntity.status(loginResponse.getStatusCode()).body(loginResponse.getBody());
