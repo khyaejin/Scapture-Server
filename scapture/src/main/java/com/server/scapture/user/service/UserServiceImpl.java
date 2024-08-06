@@ -49,6 +49,8 @@ public class UserServiceImpl implements UserService{
         }
         User user = foundUser.get();
 
+        subscribeService.checkRole(); // Subscribe 정보에 따른 User의 Role 확인 및 갱신
+
         Optional<Subscribe> foundSubscribe = subscribeRepository.findByUserId(user.getId());
 
         // 해당 회원이 구독중이 아닌 경우
@@ -71,7 +73,6 @@ public class UserServiceImpl implements UserService{
         CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, bananaBalanceResponseDto, "버내너 잔액 조회 완료되었습니다. 해당 회원은 구독중입니다.");
         return ResponseEntity.status(200).body(res);
     }
-
 
     // 버내너 충전
     @Override
