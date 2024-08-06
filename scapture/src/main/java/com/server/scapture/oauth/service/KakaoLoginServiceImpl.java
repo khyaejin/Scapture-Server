@@ -79,6 +79,65 @@ public class KakaoLoginServiceImpl extends AbstractSocialLoginService implements
         }
     }
 
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> getUserInfo(String accessToken) {
+        String reqUrl = "https://kapi.kakao.com/v2/user/me";
+        RestTemplate restTemplate = new RestTemplate();
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.set("Authorization", "Bearer " + accessToken);
+
+        HttpEntity<String> request = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(reqUrl, HttpMethod.POST, request, String.class);
+            if (response.getStatusCode() == HttpStatus.OK) {
+                JSONObject jsonObject = new JSONObject(response.getBody());
+
+                String providerId = jsonObject.optString("id", null);
+                String provider = "kakao";
+                String nickname = null;
+                String email = null;
+                String profileImageUrl = null;
+
+                if (jsonObject.has("properties")) {
+                    JSONObject properties = jsonObject.getJSONObject("properties");
+                    nickname = properties.optString("nickname", null);
+                }
+
+                if (jsonObject.has("kakao_account")) {
+                    JSONObject kakaoAccount = jsonObject.getJSONObject("kakao_account");
+                    email = kakaoAccount.optString("email", null);
+
+                    if (kakaoAccount.has("profile")) {
+                        JSONObject profile = kakaoAccount.getJSONObject("profile");
+                        profileImageUrl = profile.optString("profile_image_url", null);
+                    }
+                }
+
+                UserInfo userInfo = UserInfo.builder()
+                        .provider(provider)
+                        .providerId(providerId)
+                        .name(nickname)
+                        .email(email)
+                        .image(profileImageUrl)
+                        .build();
+
+                CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, userInfo, "유저 정보를 성공적으로 가져왔습니다.");
+                return ResponseEntity.status(200).body(res);
+            } else if (response.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+                CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(401, "토큰이 만료되었거나 유효하지 않은 토큰입니다.");
+                return ResponseEntity.status(401).body(res);
+            } else {
+                CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(response.getStatusCodeValue(), "유저 정보를 가져오는데 실패했습니다.");
+                return ResponseEntity.status(response.getStatusCodeValue()).body(res);
+            }
+        } catch (Exception e) {
+            logger.error("Error getting user info", e);
+            CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(400, "유저 정보를 가져오는데 실패했습니다.");
+            return ResponseEntity.status(400).body(res);
+        }
+    }
     //login()은 모든 소셜 로그인에서 공통됨 -> 추상 클래스로 구현
 }
