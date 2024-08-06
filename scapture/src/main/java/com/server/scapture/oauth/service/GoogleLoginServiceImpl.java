@@ -38,6 +38,7 @@ public class GoogleLoginServiceImpl extends AbstractSocialLoginService implement
 
     @Override
     public ResponseEntity<CustomAPIResponse<?>> getAccessToken(String code, String state) {
+        // POST 요청을 통해 JSON 형식의 요청 본문을 전송해야 함
         String reqUrl = "https://oauth2.googleapis.com/token";
         RestTemplate restTemplate = new RestTemplate();
 
@@ -126,5 +127,4 @@ public class GoogleLoginServiceImpl extends AbstractSocialLoginService implement
             return ResponseEntity.status(400).body(res);
         }
     }
-
 }

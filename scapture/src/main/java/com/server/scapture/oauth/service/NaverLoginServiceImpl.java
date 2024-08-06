@@ -8,8 +8,9 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -36,46 +37,37 @@ public class NaverLoginServiceImpl extends AbstractSocialLoginService implements
 
     @Override
     public ResponseEntity<CustomAPIResponse<?>> getAccessToken(String code, String state) {
-        String accessToken = null;
+        // GET 요청을 통해 URL 파라미터로 필요한 정보를 전송해야 함
         String reqUrl = String.format("https://nid.naver.com/oauth2.0/token?client_id=%s&client_secret=%s&grant_type=authorization_code&state=%s&code=%s",
                 naverApiKey, naverClientSecret, state, code);
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        HttpEntity<String> request = new HttpEntity<>(headers);
 
         try {
-            URL url = new URL(reqUrl);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
-
-            int responseCode = conn.getResponseCode();
-            logger.info("Token Response Code: {}", responseCode);
-
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                    responseCode >= 200 && responseCode < 300 ? conn.getInputStream() : conn.getErrorStream()))) {
-                String line;
-                StringBuilder responseSb = new StringBuilder();
-                while ((line = br.readLine()) != null) {
-                    responseSb.append(line);
-                }
-                String result = responseSb.toString();
-                logger.info("Token Response Body: {}", result);
-
-                JSONObject jsonObject = new JSONObject(result);
+            ResponseEntity<String> response = restTemplate.exchange(reqUrl, HttpMethod.GET, request, String.class);
+            if (response.getStatusCode() == HttpStatus.OK) {
+                JSONObject jsonObject = new JSONObject(response.getBody());
                 if (jsonObject.has("access_token")) {
-                    accessToken = jsonObject.getString("access_token");
+                    String accessToken = jsonObject.getString("access_token");
+                    CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, accessToken, "접근 토큰을 성공적으로 받았습니다.");
+                    return ResponseEntity.status(200).body(res);
                 } else {
                     CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(401, "이미 사용되었거나 유효하지 않은 인가 코드 입니다.");
                     return ResponseEntity.status(401).body(res);
                 }
+            } else {
+                CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(response.getStatusCodeValue(), "접근 토큰을 받는데 실패했습니다.");
+                return ResponseEntity.status(response.getStatusCodeValue()).body(res);
             }
         } catch (Exception e) {
             logger.error("Error getting access token", e);
             CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(401, "접근 토큰을 받는데 실패했습니다.");
             return ResponseEntity.status(401).body(res);
         }
-
-        CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, accessToken, "접근 토큰을 성공적으로 받았습니다.");
-        return ResponseEntity.status(200).body(res);
     }
 
     @Override
