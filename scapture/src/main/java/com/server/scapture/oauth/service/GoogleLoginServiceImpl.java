@@ -85,58 +85,46 @@ public class GoogleLoginServiceImpl extends AbstractSocialLoginService implement
         String profileImageUrl = null;
 
         String reqUrl = "https://www.googleapis.com/oauth2/v2/userinfo";
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Bearer " + accessToken);
+
+        HttpEntity<String> request = new HttpEntity<>(headers);
+
         try {
-            URL url = new URL(reqUrl);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("Authorization", "Bearer " + accessToken);
-            conn.setRequestProperty("Content-Type", "application/json");
+            ResponseEntity<String> response = restTemplate.exchange(reqUrl, HttpMethod.GET, request, String.class);
+            if (response.getStatusCode() == HttpStatus.OK) {
+                JSONObject jsonObject = new JSONObject(response.getBody());
 
-            int responseCode = conn.getResponseCode();
-            logger.info("Response Code: {}", responseCode);
-
-            if (responseCode == 401) {
-                CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(401, "토큰이 만료되었거나 유효하지 않은 토큰입니다.");
-                return ResponseEntity.status(401).body(res);
-            }
-
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                    responseCode >= 200 && responseCode < 300 ? conn.getInputStream() : conn.getErrorStream()))) {
-                String line;
-                StringBuilder responseSb = new StringBuilder();
-                while ((line = br.readLine()) != null) {
-                    responseSb.append(line);
-                }
-                String result = responseSb.toString();
-                logger.info("User Info Response Body: {}", result);
-
-                JSONObject jsonObject = new JSONObject(result);
-
-                if (jsonObject.has("id")) {
-                    providerId = jsonObject.getString("id");
-                } else {
-                    logger.warn("No 'id' field in response");
-                }
-
+                providerId = jsonObject.optString("id", null);
                 nickname = jsonObject.optString("name", null);
                 email = jsonObject.optString("email", null);
                 profileImageUrl = jsonObject.optString("picture", null);
 
+                UserInfo userInfo = UserInfo.builder()
+                        .provider(provider)
+                        .providerId(providerId)
+                        .name(nickname)
+                        .email(email)
+                        .image(profileImageUrl)
+                        .build();
+
+                CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, userInfo, "유저 정보를 성공적으로 가져왔습니다.");
+                return ResponseEntity.status(200).body(res);
+            } else if (response.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+                CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(401, "토큰이 만료되었거나 유효하지 않은 토큰입니다.");
+                return ResponseEntity.status(401).body(res);
+            } else {
+                CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(response.getStatusCodeValue(), "유저 정보를 가져오는데 실패했습니다.");
+                return ResponseEntity.status(response.getStatusCodeValue()).body(res);
             }
         } catch (Exception e) {
             logger.error("Error getting user info", e);
             CustomAPIResponse<?> res = CustomAPIResponse.createFailWithoutData(400, "유저 정보를 가져오는데 실패했습니다.");
             return ResponseEntity.status(400).body(res);
         }
-
-        UserInfo userInfo = UserInfo.builder()
-                .provider(provider)
-                .providerId(providerId)
-                .name(nickname)
-                .email(email)
-                .image(profileImageUrl)
-                .build();
-        CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, userInfo, "유저 정보를 성공적으로 가져왔습니다.");
-        return ResponseEntity.status(200).body(res);
     }
+
 }
