@@ -13,12 +13,6 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 @Service
 public class GoogleLoginServiceImpl extends AbstractSocialLoginService implements GoogleLoginService {
@@ -31,20 +25,20 @@ public class GoogleLoginServiceImpl extends AbstractSocialLoginService implement
     private String googleClientSecret;
     @Value("${spring.security.oauth2.client.registration.google.redirect-uri}")
     private String googleRedirectUri;
-
     public GoogleLoginServiceImpl(UserRepository userRepository, JwtUtil jwtUtil) {
         super(userRepository, jwtUtil);
     }
 
     @Override
     public ResponseEntity<CustomAPIResponse<?>> getAccessToken(String code, String state) {
-        // POST 요청을 통해 JSON 형식의 요청 본문을 전송해야 함
+        // Google OAuth2 토큰 요청 URL
         String reqUrl = "https://oauth2.googleapis.com/token";
         RestTemplate restTemplate = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setContentType(MediaType.APPLICATION_JSON); // 요청 헤더에 ContentType을 JSON으로 설정
 
+        // 요청 본문에 필요한 파라미터 설정
         JSONObject requestBody = new JSONObject();
         requestBody.put("code", code);
         requestBody.put("client_id", googleClientId);
@@ -52,13 +46,17 @@ public class GoogleLoginServiceImpl extends AbstractSocialLoginService implement
         requestBody.put("redirect_uri", googleRedirectUri);
         requestBody.put("grant_type", "authorization_code");
 
+        // 요청 본문을 포함한 HttpEntity 생성
         HttpEntity<String> request = new HttpEntity<>(requestBody.toString(), headers);
 
         try {
+            // Google OAuth2 서버로 POST 요청 전송
             ResponseEntity<String> response = restTemplate.exchange(reqUrl, HttpMethod.POST, request, String.class);
             if (response.getStatusCode() == HttpStatus.OK) {
+                // 응답을 JSON 객체로 변환
                 JSONObject jsonObject = new JSONObject(response.getBody());
                 if (jsonObject.has("access_token")) {
+                    // access_token 추출
                     String accessToken = jsonObject.getString("access_token");
                     CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, accessToken, "접근 토큰을 성공적으로 받았습니다.");
                     return ResponseEntity.status(200).body(res);
@@ -79,6 +77,7 @@ public class GoogleLoginServiceImpl extends AbstractSocialLoginService implement
 
     @Override
     public ResponseEntity<CustomAPIResponse<?>> getUserInfo(String accessToken) {
+        // 네이버 사용자 정보 요청 URL
         String providerId = null;
         String provider = "naver";
         String nickname = null;
@@ -89,19 +88,23 @@ public class GoogleLoginServiceImpl extends AbstractSocialLoginService implement
         RestTemplate restTemplate = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Bearer " + accessToken);
+        headers.setContentType(MediaType.APPLICATION_JSON); // 요청 헤더에 ContentType을 JSON으로 설정
+        headers.set("Authorization", "Bearer " + accessToken); // 요청 헤더에 Authorization 토큰 설정
 
+        // 요청 헤더를 포함한 HttpEntity 생성
         HttpEntity<String> request = new HttpEntity<>(headers);
 
         try {
+            // 네이버 서버로 GET 요청 전송
             ResponseEntity<String> response = restTemplate.exchange(reqUrl, HttpMethod.GET, request, String.class);
             if (response.getStatusCode() == HttpStatus.OK) {
+                // 응답 본문을 JSON 객체로 변환
                 JSONObject jsonObject = new JSONObject(response.getBody());
 
                 if (jsonObject.has("response")) {
                     JSONObject responseObj = jsonObject.getJSONObject("response");
 
+                    // 사용자 정보 추출
                     providerId = responseObj.optString("id", null);
                     nickname = responseObj.optString("nickname", null);
                     email = responseObj.optString("email", null);
@@ -134,4 +137,6 @@ public class GoogleLoginServiceImpl extends AbstractSocialLoginService implement
             return ResponseEntity.status(400).body(res);
         }
     }
+
+    // login()은 모든 소셜 로그인에서 공통 -> 추상 클래스로 구현
 }

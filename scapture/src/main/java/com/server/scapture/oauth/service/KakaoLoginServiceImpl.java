@@ -14,13 +14,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
-
 @Service
 public class KakaoLoginServiceImpl extends AbstractSocialLoginService implements KakaoLoginService {
 
@@ -34,19 +27,20 @@ public class KakaoLoginServiceImpl extends AbstractSocialLoginService implements
     private String reqUrl;
     @Value("${spring.security.oauth2.client.registration.kakao.client-secret}")
     private String kakaoClientSecret;
-
     public KakaoLoginServiceImpl(UserRepository userRepository, JwtUtil jwtUtil) {
         super(userRepository, jwtUtil);
     }
 
     @Override
     public ResponseEntity<CustomAPIResponse<?>> getAccessToken(String code, String state) {
+        // Kakao OAuth2 토큰 요청 URL
         String reqUrl = "https://kauth.kakao.com/oauth/token";
         RestTemplate restTemplate = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED); // 요청 헤더에 ContentType을 application/x-www-form-urlencoded으로 설정
 
+        // 요청 본문에 필요한 파라미터 설정
         MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<>();
         requestBody.add("grant_type", "authorization_code");
         requestBody.add("client_id", kakaoApiKey);
@@ -54,13 +48,17 @@ public class KakaoLoginServiceImpl extends AbstractSocialLoginService implements
         requestBody.add("redirect_uri", kakaoRedirectUri);
         requestBody.add("code", code);
 
+        // 요청 본문을 포함한 HttpEntity 생성
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(requestBody, headers);
 
         try {
+            // Kakao OAuth2 서버로 POST 요청 전송
             ResponseEntity<String> response = restTemplate.exchange(reqUrl, HttpMethod.POST, request, String.class);
             if (response.getStatusCode() == HttpStatus.OK) {
+                // 응답을 JSON 객체로 변환
                 JSONObject jsonObject = new JSONObject(response.getBody());
                 if (jsonObject.has("access_token")) {
+                    // access_token 추출
                     String accessToken = jsonObject.getString("access_token");
                     CustomAPIResponse<?> res = CustomAPIResponse.createSuccess(200, accessToken, "접근 토큰을 성공적으로 받았습니다.");
                     return ResponseEntity.status(200).body(res);
@@ -81,20 +79,25 @@ public class KakaoLoginServiceImpl extends AbstractSocialLoginService implements
 
     @Override
     public ResponseEntity<CustomAPIResponse<?>> getUserInfo(String accessToken) {
+        // Kakao 사용자 정보 요청 URL
         String reqUrl = "https://kapi.kakao.com/v2/user/me";
         RestTemplate restTemplate = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        headers.set("Authorization", "Bearer " + accessToken);
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED); // 요청 헤더에 ContentTpye을 application/x-www-form-urlencoded으로 설정
+        headers.set("Authorization", "Bearer " + accessToken); // 요청 헤더에 Authorization 토큰 설정
 
+        // 요청 헤더를 포함한 HttpEntity 생성
         HttpEntity<String> request = new HttpEntity<>(headers);
 
         try {
+            // Kakao 서버로 POST 요청 전송
             ResponseEntity<String> response = restTemplate.exchange(reqUrl, HttpMethod.POST, request, String.class);
             if (response.getStatusCode() == HttpStatus.OK) {
+                // 응답 본문을 JSON 객체로 변환
                 JSONObject jsonObject = new JSONObject(response.getBody());
 
+                // 사용자 정보 추출
                 String providerId = jsonObject.optString("id", null);
                 String provider = "kakao";
                 String nickname = null;
@@ -139,5 +142,6 @@ public class KakaoLoginServiceImpl extends AbstractSocialLoginService implements
             return ResponseEntity.status(400).body(res);
         }
     }
-    //login()은 모든 소셜 로그인에서 공통됨 -> 추상 클래스로 구현
+
+    //login()은 모든 소셜 로그인에서 공통 -> 추상 클래스로 구현
 }
