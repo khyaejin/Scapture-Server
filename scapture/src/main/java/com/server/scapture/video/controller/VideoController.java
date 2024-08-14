@@ -1,19 +1,12 @@
 package com.server.scapture.video.controller;
 
-import com.server.scapture.oauth.jwt.JwtUtil;
 import com.server.scapture.util.response.CustomAPIResponse;
 import com.server.scapture.video.dto.VideoCreateRequestDto;
 import com.server.scapture.video.service.VideoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.util.List;
-
 @RequestMapping("/api/videos")
 @RestController
 @RequiredArgsConstructor
