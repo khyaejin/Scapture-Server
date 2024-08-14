@@ -565,4 +565,8 @@ public class VideoServiceImpl implements VideoService{
                 .status(HttpStatus.OK)
                 .body(responseBody);
     }
+    @Override
+    public ResponseEntity<CustomAPIResponse<?>> getRecordInfo(Long fieldId) {
+        return null;
+    }
 }
