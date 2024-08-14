@@ -4,6 +4,7 @@ import com.server.scapture.domain.Field;
 import com.server.scapture.domain.Schedule;
 import com.server.scapture.field.repository.FieldRepository;
 import com.server.scapture.schedule.dto.CreateScheduleRequestDto;
+import com.server.scapture.schedule.dto.CreateScheduleResponseDto;
 import com.server.scapture.schedule.repository.ScheduleRepository;
 import com.server.scapture.util.response.CustomAPIResponse;
 import lombok.RequiredArgsConstructor;
@@ -23,9 +24,8 @@ public class ScheduleServiceImpl implements ScheduleService{
     private final ScheduleRepository scheduleRepository;
     private final FieldRepository fieldRepository;
     private LocalDateTime convert(String date) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate localDate = LocalDate.parse(date, formatter);
-        return localDate.atStartOfDay(); // 자정을 기본 시간으로 설정
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        return LocalDateTime.parse(date, formatter);
     }
     @Override
     public ResponseEntity<CustomAPIResponse<?>> createSchedule(CreateScheduleRequestDto createScheduleRequestDto) {
@@ -45,26 +45,20 @@ public class ScheduleServiceImpl implements ScheduleService{
         LocalDateTime startDate = convert(createScheduleRequestDto.getStartDate());
         LocalDateTime endDate = convert(createScheduleRequestDto.getEndDate());
         System.out.println(startDate + " " + endDate);
-        while (true) {
-            for (int hour = 6; hour <= 22; hour += 2) {
-                LocalDateTime start = startDate.plusHours(hour);
-                LocalDateTime end = start.plusHours(2);
-                // 2-2. Schedule 생성
-                Schedule schedule = Schedule.builder()
+        Schedule schedule = Schedule.builder()
                 .field(field)
-                .startDate(start)
-                .endDate(end)
+                .startDate(startDate)
+                .endDate(endDate)
                 .price(createScheduleRequestDto.getPrice())
                 .isReserved(false)
                 .build();
-                // 3. Schedule 저장
-                scheduleRepository.save(schedule);
-            }
-            if(startDate.equals(endDate)) break;
-            startDate = startDate.plusDays(1);
-        }
+        // 3. Schedule 저장
+        scheduleRepository.save(schedule);
         // 4. Response
-        CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccessWithoutData(HttpStatus.CREATED.value(), "운영 일정 생성 완료되었습니다.");
+        CreateScheduleResponseDto data = CreateScheduleResponseDto.builder()
+                .scheduleId(schedule.getId())
+                .build();
+        CustomAPIResponse<Object> responseBody = CustomAPIResponse.createSuccess(HttpStatus.CREATED.value(), data,"운영 일정 생성 완료되었습니다.");
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(responseBody);
