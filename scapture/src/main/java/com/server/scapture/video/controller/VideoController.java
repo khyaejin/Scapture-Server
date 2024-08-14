@@ -67,7 +67,7 @@ public class VideoController {
 
     @GetMapping("/{fieldId}/record")
     public ResponseEntity<CustomAPIResponse<?>> getRecordInfo(@PathVariable("fieldId") Long fieldId) {
-        return null;
+        return videoService.getRecordInfo(fieldId);
     }
 
 }

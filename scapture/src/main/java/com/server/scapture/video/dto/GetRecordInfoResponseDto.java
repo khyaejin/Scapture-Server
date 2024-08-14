@@ -13,6 +13,5 @@ import java.util.List;
 public class GetRecordInfoResponseDto {
     private String stadiumName;
     private String fieldName;
-    private String date;
     private List<String> ipList;
 }

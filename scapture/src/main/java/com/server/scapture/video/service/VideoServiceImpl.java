@@ -1,5 +1,6 @@
 package com.server.scapture.video.service;
 
+import com.server.scapture.Ip.repository.IpRepository;
 import com.server.scapture.domain.*;
 import com.server.scapture.download.repository.DownloadRepository;
 import com.server.scapture.field.repository.FieldRepository;
@@ -35,6 +36,7 @@ public class VideoServiceImpl implements VideoService{
     private final DownloadRepository downloadRepository;
     private final UserRepository userRepository;
     private final ImageRepository imageRepository;
+    private final IpRepository ipRepository;
     private final JwtUtil jwtUtil;
     @Override
     public ResponseEntity<CustomAPIResponse<?>> createVideo(VideoCreateRequestDto videoCreateRequestDto) {
@@ -567,6 +569,46 @@ public class VideoServiceImpl implements VideoService{
     }
     @Override
     public ResponseEntity<CustomAPIResponse<?>> getRecordInfo(Long fieldId) {
-        return null;
+        // 1. field 조회
+        Optional<Field> foundField = fieldRepository.findById(fieldId);
+        // 1-1. 실패
+        if (foundField.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 구장입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(responseBody);
+        }
+        // 1-2. 성공
+        Field field = foundField.get();
+        // 2. 경기장 조회
+        Optional<Stadium> foundStadium = stadiumRepository.findById(field.getStadium().getId());
+        // 2-1. 실패
+        if (foundStadium.isEmpty()) {
+            CustomAPIResponse<Object> responseBody = CustomAPIResponse.createFailWithoutData(HttpStatus.NOT_FOUND.value(), "존재하지 않는 경기장입니다.");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(responseBody);
+        }
+        // 2-2. 성공
+        Stadium stadium = foundStadium.get();
+        // 3. ip 조회
+        List<Ip> ips = ipRepository.findByField(field);
+        // 4. data
+        // 4-1. ip List
+        List<String> ipList = new ArrayList<>();
+        for (Ip ip : ips) {
+            ipList.add(ip.getIp());
+        }
+        // 4-3. dto
+        GetRecordInfoResponseDto data = GetRecordInfoResponseDto.builder()
+                .stadiumName(stadium.getName())
+                .fieldName(field.getName())
+                .ipList(ipList)
+                .build();
+        // 5. response
+        CustomAPIResponse<GetRecordInfoResponseDto> responseBody = CustomAPIResponse.createSuccess(HttpStatus.OK.value(), data, "영상 녹화 정보 조회 완료되었습니다.");
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(responseBody);
     }
 }
