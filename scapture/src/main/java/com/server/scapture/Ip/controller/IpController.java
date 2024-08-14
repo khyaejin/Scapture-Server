@@ -5,6 +5,7 @@ import com.server.scapture.Ip.service.IpService;
 import com.server.scapture.util.response.CustomAPIResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,8 +17,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class IpController {
     private final IpService ipService;
-
-    ResponseEntity<CustomAPIResponse<?>> createIp(@RequestBody List<CreateIpRequestDto> requestDtoList) {
-        return null;
+    @GetMapping
+    ResponseEntity<CustomAPIResponse<?>> createIp(@RequestBody CreateIpRequestDto requestDto) {
+        return ipService.createIp(requestDto);
     }
 }

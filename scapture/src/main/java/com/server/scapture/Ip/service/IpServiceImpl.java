@@ -11,9 +11,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class IpServiceImpl implements IpService{
-
     @Override
-    public ResponseEntity<CustomAPIResponse<?>> createIp(List<CreateIpRequestDto> requestDtoList) {
+    public ResponseEntity<CustomAPIResponse<?>> createIp(CreateIpRequestDto requestDto) {
         return null;
     }
 }

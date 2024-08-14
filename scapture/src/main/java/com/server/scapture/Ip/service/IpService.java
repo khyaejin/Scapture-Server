@@ -7,5 +7,5 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 public interface IpService {
-    ResponseEntity<CustomAPIResponse<?>> createIp(List<CreateIpRequestDto> requestDtoList);
+    ResponseEntity<CustomAPIResponse<?>> createIp(CreateIpRequestDto requestDto);
 }
