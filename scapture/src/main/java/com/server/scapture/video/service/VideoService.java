@@ -20,4 +20,5 @@ public interface VideoService {
     ResponseEntity<CustomAPIResponse<?>> deleteStore(String header, Long videoId);
     ResponseEntity<CustomAPIResponse<?>> createDownload(String header, Long videoId);
     ResponseEntity<CustomAPIResponse<?>> getDownload(String header, Long videoId);
+    ResponseEntity<CustomAPIResponse<?>> getRecordInfo(Long fieldId);
  }
