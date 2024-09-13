@@ -1,6 +1,3 @@
-# Scapture-Server
-
-
 <div align="center">
   <img src="https://capsule-render.vercel.app/api?type=venom&color=auto&height=300&section=header&text=Scapture-Server&fontSize=90&animation=fadeIn&desc=Backend%20Server%20for%20Scapture&descAlignY=65&descAlign=62" alt="header"/>
   
@@ -29,4 +26,15 @@
   <a href="https://hits.seeyoufarm.com">
     <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fkhyaejin%2FScapture-Server&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false" alt="Hits" />
   </a>
+  
+   <h3> ERD </h3>
+    <img width="1395" alt="scapture-erd" src="https://github.com/user-attachments/assets/3f5d1db5-53d6-4cb1-a4dc-3c123a88d1ef">
+    
+    <h3>  </h3>
+
+  
+  
 </div>
+
+
+ 
